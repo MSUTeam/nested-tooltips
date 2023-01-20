@@ -10,4 +10,6 @@
 
 ::NestedTooltips.MH.queue(">mod_msu", function() {
 	::NestedTooltips.Mod <- ::MSU.Class.Mod(::NestedTooltips.ID, ::NestedTooltips.Version, ::NestedTooltips.Name);
+
+	::Hooks.registerJS("ui/mods/msu/nested_tooltips.js");
 });
