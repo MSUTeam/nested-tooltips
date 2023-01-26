@@ -17,4 +17,5 @@
 	}
 
 	::Hooks.registerJS("ui/mods/msu/nested_tooltips.js");
+	::Hooks.registerCSS("ui/mods/msu/css/nested_tooltips.css");
 });
