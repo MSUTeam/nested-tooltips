@@ -1,4 +1,4 @@
-local __regexp = regexp("\\[(.+?)\\|([\\w\\.]+)\\]"); // \[(.+?)\|([\w\.]+)\]
+local __regexp = regexp("\\[([^|]+)\\|([\\w\\.]+)\\]"); // \[(.+?)\|([\w\.]+)\] \[([^|]+)\|([\w\.]+)\]
 
 // the __regexp should be a static member of the TooltipsModAddon class when merging into MSU
 ::MSU.Class.TooltipsModAddon.parseString <- function( _string, _prefix = "" )
