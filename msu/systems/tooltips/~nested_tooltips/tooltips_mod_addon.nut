@@ -7,3 +7,8 @@ local __regexp = regexp("\\[([^|]+)\\|([\\w\\.]+)\\]"); // \[(.+?)\|([\w\.]+)\] 
 	return ::MSU.String.regexReplace(_string, __regexp, @(_all, _text, _id) format("[tooltip=%s.%s]%s[/tooltip]", modID, _prefix + _id, _text));
 }
 
+::MSU.Class.TooltipsModAddon.setTooltipImageKeywords <- function( _table )
+{
+	return ::MSU.System.Tooltips.setTooltipImageKeywords(this.Mod.getID(), _table);
+}
+
