@@ -18,3 +18,8 @@ NestedTooltipsJSConnection.prototype.setTooltipImageKeywords = function (_table)
 		MSU.NestedTooltip.KeyImgMap[_key] = _value;
 	})
 }
+
+NestedTooltipsJSConnection.prototype.queryZoomLevel = function (_callback)
+{
+	SQ.call(this.mSQHandle, "queryZoomLevel", null, _callback);
+}
