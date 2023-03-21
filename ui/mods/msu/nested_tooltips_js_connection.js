@@ -23,3 +23,8 @@ NestedTooltipsJSConnection.prototype.queryZoomLevel = function (_callback)
 {
 	SQ.call(this.mSQHandle, "queryZoomLevel", null, _callback);
 }
+
+NestedTooltipsJSConnection.prototype.updateNestedTooltipTextStyle = function (_styleString)
+{
+	MSU.NestedTooltip.TextStyle = _styleString;
+}
