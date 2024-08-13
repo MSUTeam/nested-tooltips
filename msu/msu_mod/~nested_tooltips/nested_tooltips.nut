@@ -11,6 +11,8 @@
 };
 
 ::MSU.QueueBucket.FirstWorldInit.push(function() {
+	::MSU.__createDummyPlayer();
+
 	foreach (file in ::IO.enumerateFiles("scripts/skills"))
 	{
 		if (file == "scripts/skills/skill")
