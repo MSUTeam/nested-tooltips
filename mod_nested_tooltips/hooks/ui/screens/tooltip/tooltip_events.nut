@@ -93,21 +93,6 @@
 
 		switch (_itemOwner)
 		{
-			case null:
-				if (_itemId != null)
-				{
-					foreach (itemObj in ::MSU.NestedTooltips.ItemObjectsByFilename)
-					{
-						if (itemObj.getInstanceID() == _itemId)
-						{
-							item = itemObj;
-							break;
-						}
-					}
-				}
-				if (item != null)
-					break;
-
 			case "entity":
 				if (entity != null)	item = entity.getItems().getItemByInstanceID(_itemId);
 				break;
@@ -153,6 +138,18 @@
 				local result = ::Tactical.CombatResultLoot.getItemByInstanceID(_itemId);
 				if (result != null) item = result.item;
 				break;
+		}
+
+		if (item == null && _itemId != null)
+		{
+			foreach (itemObj in ::MSU.NestedTooltips.ItemObjectsByFilename)
+			{
+				if (itemObj.getInstanceID() == _itemId)
+				{
+					item = itemObj;
+					break;
+				}
+			}
 		}
 
 		return item;
