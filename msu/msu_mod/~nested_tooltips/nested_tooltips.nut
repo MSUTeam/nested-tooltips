@@ -13,10 +13,10 @@
 			continue;
 
 		local skill = ::new(file);
-		if (::MSU.isIn("saveBaseValues", skill, true))
+		if (::isKindOf(skill, "skill"))
 		{
 			skill.saveBaseValues();
-			::MSU.NestedTooltips.SkillObjectsByFilename[split(file, "/").top()] <- skill;
+			::MSU.NestedTooltips.SkillObjectsByFilename[skill.ClassName] <- skill;
 		}
 	}
 
