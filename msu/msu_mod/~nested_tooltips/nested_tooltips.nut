@@ -1,13 +1,7 @@
 ::MSU.NestedTooltips <- {
-	NestedSkillItem = null,
 	SkillObjectsByFilename = {},
 	ItemObjectsByFilename = {},
 	PerkIDByFilename = {}
-
-	function setNestedSkillItem( _item )
-	{
-		this.NestedSkillItem = ::MSU.asWeakTableRef(_item);
-	}
 };
 
 ::MSU.QueueBucket.FirstWorldInit.push(function() {

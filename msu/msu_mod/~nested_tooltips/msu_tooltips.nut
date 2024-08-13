@@ -6,10 +6,17 @@
 		return ::TooltipEvents.general_querySkillNestedTooltipData(null, null, filename);
 	}),
 	Skill = ::MSU.Class.CustomTooltip(function(_data) {
-		local arr = split(_data.ExtraData, ",");
-		local entityId = "entityId" in _data ? _data.entityId : null;
-		local skillId = arr.len() > 1 && arr[1] != "null" ? arr[1] : null;
-		return ::TooltipEvents.general_querySkillNestedTooltipData(entityId, skillId, arr[0])
+		local extraData = split(_data.ExtraData, ",");
+		_data.Filename <- extraData.remove(0);
+		if (extraData.len() != 0)
+		{
+			foreach (entry in extraData)
+			{
+				local pair = split(entry, ":");
+				_data[pair[0]] <- pair[1] == "null" ? null : pair[1];
+			}
+		}
+		return ::TooltipEvents.general_querySkillNestedTooltipData(_data);
 	}),
 	// Sometimes you need to show the nested tooltip by considering the entity to be null. This is useful for
 	// e.g. showing nested tooltips of StatusEffects inside perk tooltips on the perk tree window when the selected
@@ -18,14 +25,24 @@
 	NullEntitySkill = ::MSU.Class.CustomTooltip(function(_data) {
 		local arr = split(_data.ExtraData, ",");
 		local skillId = arr.len() > 1 && arr[1] != "null" ? arr[1] : null;
-		return ::TooltipEvents.general_querySkillNestedTooltipData(null, skillId, arr[0])
 	}),
 	Item = ::MSU.Class.CustomTooltip(function(_data) {
-		local arr = split(_data.ExtraData, ",");
-		local entityId = "entityId" in _data ? _data.entityId : null;
-		local itemId = arr.len() > 1 && arr[1] != "null" ? arr[1] : null;
-		local itemOwner = arr.len() > 2 && arr[2] != "null" ? arr[2] : null;
-		return ::TooltipEvents.general_queryItemNestedTooltipData(entityId, itemId, itemOwner, arr[0])
+		local extraData = split(_data.ExtraData, ",");
+		_data.Filename <- extraData.remove(0);
+		// We want itemId and _itemOwner to be passed via ExtraData only
+		// because a nested item hyperlink shouldn't be considered as the tooltip
+		// of an item that is present on an entity unless specified
+		_data.itemOwner <- null;
+		_data.itemId <- null;
+		if (extraData.len() != 0)
+		{
+			foreach (entry in extraData)
+			{
+				local pair = split(entry, ":");
+				_data[pair[0]] <- pair[1] == "null" ? null : pair[1];
+			}
+		}
+		return ::TooltipEvents.general_queryItemNestedTooltipData(_data);
 	}),
 });
 
