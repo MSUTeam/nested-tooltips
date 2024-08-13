@@ -23,8 +23,9 @@
 	// character has the StatusEffect. Using the standard Skill+filename will show the tooltip of the effect based on that character
 	// whereas we want to show a generic tooltip independent of the entity.
 	NullEntitySkill = ::MSU.Class.CustomTooltip(function(_data) {
-		local arr = split(_data.ExtraData, ",");
-		local skillId = arr.len() > 1 && arr[1] != "null" ? arr[1] : null;
+		_data.entityId <- null;
+		_data.itemOwner <- null;
+		return ::MSU.System.Tooltips.getTooltip(_data.modId, "Skill").Tooltip.getUIData(_data);
 	}),
 	Item = ::MSU.Class.CustomTooltip(function(_data) {
 		local extraData = split(_data.ExtraData, ",");
