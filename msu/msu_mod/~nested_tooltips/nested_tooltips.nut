@@ -22,10 +22,13 @@
 
 	foreach (file in ::IO.enumerateFiles("scripts/items"))
 	{
+		if (file == "scripts/items/item")
+			continue;
+
 		local item = ::new(file);
-		if (::MSU.isIn("getID", item, true))
+		if (::isKindOf(item, "item"))
 		{
-			::MSU.NestedTooltips.ItemObjectsByFilename[split(file, "/").top()] <- item;
+			::MSU.NestedTooltips.ItemObjectsByFilename[item.ClassName] <- item;
 		}
 	}
 });
