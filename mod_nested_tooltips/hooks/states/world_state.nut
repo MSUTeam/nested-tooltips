@@ -1,9 +1,8 @@
 ::MSU.MH.hook("scripts/states/world_state", function(q) {
-	q.loadCampaign = @(__original) function( _campaignFileName )
+	q.init = @(__original) function()
 	{
 		::MSU.__destroyDummyPlayer();
-		__original(_campaignFileName);
-		::MSU.__createDummyPlayer();
+		__original();
 	}
 
 	q.onBeforeSerialize = @(__original) function( _out )
