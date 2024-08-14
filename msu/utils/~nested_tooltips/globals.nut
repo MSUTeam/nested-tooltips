@@ -1,6 +1,12 @@
 ::MSU.DummyPlayer <- null;
+::MSU.__canCreateDummyPlayer <- false;
 ::MSU.getDummyPlayer <- function()
 {
+	if (this.DummyPlayer == null && this.__canCreateDummyPlayer)
+	{
+		this.__createDummyPlayer();
+	}
+
 	return this.DummyPlayer;
 }
 
