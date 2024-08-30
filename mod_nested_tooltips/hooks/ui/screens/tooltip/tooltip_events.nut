@@ -2,11 +2,11 @@
 	q.general_querySkillNestedTooltipData <- function( _data )
 	{
 		local entityId = "entityId" in _data ? _data.entityId : null;
-		local skillId = "skillId" in _data ? _data.skillId : null;
+		// local skillId = "skillId" in _data ? _data.skillId : null;
 		local itemId = "itemId" in _data ? _data.itemId : null;
 		local itemOwner = "itemOwner" in _data ? _data.itemOwner : null;
 
-		if (skillId == null) skillId = ::MSU.NestedTooltips.SkillObjectsByFilename[_data.Filename].getID();
+		local skillId = ::MSU.NestedTooltips.SkillObjectsByFilename[_data.Filename].getID();
 		local entity = entityId != null ? ::Tactical.getEntityByID(entityId) : null;
 		local skill;
 		if (entity != null)
