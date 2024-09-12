@@ -6,11 +6,12 @@ this.nested_tooltips_js_connection <- ::inherit("scripts/mods/msu/js_connection"
 	function connect()
 	{
 		this.js_connection.connect();
-		this.updateNestedTooltipTextStyle();
 	}
 
 	function updateNestedTooltipTextStyle()
 	{
+		if (!this.isConnected()) return;
+
 		local styleString = format("color: rgba(%s);", ::getModSetting("mod_msu", "NestedTooltips_Color").getValue());
 		if (::getModSetting("mod_msu", "NestedTooltips_Bold").getValue()) styleString += "font-weight: bold;";
 		if (::getModSetting("mod_msu", "NestedTooltips_Italic").getValue()) styleString += "font-style: italic;";
