@@ -20,6 +20,11 @@
 	::MSU.DummyPlayer.m.Name = "MSU Dummy Player";
 
 	::MSU.DummyPlayer.getSkills().removeByID("special.double_grip");
+
+	::MSU.DummyPlayer.getTile = function()
+	{
+		return ::MSU.Class.DummyPlayerTile();
+	}
 }
 
 ::MSU.__destroyDummyPlayer <- function()
