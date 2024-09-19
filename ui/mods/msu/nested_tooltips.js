@@ -553,9 +553,9 @@ TooltipModule.prototype.setupUITooltip = function(_targetDIV, _data)
 	}
 	// We also move it to the left or right (depending on the half of the screen we're in) to make sure it's not overlapping the cursor
 	if (targetOffset.left > (wnd.width() / 2))
-		offsets.left -= this.mContainer.outerWidth(true);
+		offsets.left = targetOffset.left + _targetDIV.outerWidth(true) - this.mContainer.outerWidth(true);
 	else
-		offsets.left += _targetDIV.outerWidth(true);
+		offsets.left = targetOffset.left;
 
 	this.mContainer.css(offsets);
 }
