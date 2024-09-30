@@ -156,6 +156,10 @@ MSU.NestedTooltip = {
 	{
 		return this.__tooltipStack.length === 0;
 	},
+	removeTopTooltip : function()
+	{
+		this.removeTooltip(this.__tooltipStack[this.__tooltipStack.length-1]);
+	},
 	removeTooltip : function (_pairData)
 	{
 		this.cleanSourceContainer(_pairData.source.container);
@@ -314,6 +318,18 @@ MSU.NestedTooltip = {
 			self.clearTimeouts(tooltipData);
 			tooltipData.isHovered = false;
 			tooltipData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay);
+		});
+		_tooltipContainer.on('mousedown.msu-tooltip-container', function (_event)
+		{
+			if (_event.which == 1)
+			{
+				_event.stopPropagation();
+				self.removeTopTooltip();
+				if (self.__tooltipStack.length > 0)
+				{
+					self.__tooltipStack[self.__tooltipStack.length-1].tooltip.container.trigger('mouseenter.msu-tooltip-container');
+				}
+			}
 		});
 	},
 	getTooltipFromData : function (_backendData, _contentType)
