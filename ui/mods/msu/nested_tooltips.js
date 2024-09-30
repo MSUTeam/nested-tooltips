@@ -78,6 +78,7 @@ MSU.NestedTooltip = {
 			var self = MSU.NestedTooltip;
 			var tooltipSource = $(this);
 			if (tooltipSource.data('msu-nested') !== undefined) return;
+			clearTimeout(self.__showTooltipTimeout);
 			self.__showTooltipTimeout = setTimeout(function(){
 				self.onShowTooltipTimerExpired(tooltipSource, _tooltipParams);
 			}, _tooltipParams.isTileTooltip === true ? 0 : self.__tooltipShowDelay);
@@ -260,17 +261,13 @@ MSU.NestedTooltip = {
 					return;
 				}
 				data.isLocked = true;
-				_tooltipContainer.addClass("msu-nested-tooltips-locked");
-				setTimeout(function()
-				{
-					_tooltipContainer.removeClass("msu-nested-tooltips-locked");
-				}, 100)
 	        }
 	   });
 
-		_sourceContainer.mousedown(function(){
+		_sourceContainer.mousedown(function(_event){
 			if (MSU.Keybinds.isMousebindPressed(MSU.ID, "LockTooltip"))
 			{
+				_event.stopPropagation();
 				progressImage.velocity("finish");
 			}
 		})
@@ -278,14 +275,16 @@ MSU.NestedTooltip = {
 	addSourceContainerMouseHandler : function(_sourceContainer)
 	{
 		var self = this;
-		var sourceData = _sourceContainer.data('msu-nested');
 		_sourceContainer.on('mouseenter.msu-tooltip-showing', function(_event)
 		{
+			var sourceData = $(this).data('msu-nested');
 			self.clearTimeouts(sourceData);
 			sourceData.isHovered = true;
+			sourceData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay);
 		});
 		_sourceContainer.on('mouseleave.msu-tooltip-showing remove.msu-tooltip-showing', function (_event)
 		{
+			var sourceData = $(this).data('msu-nested');
 			self.clearTimeouts(sourceData);
 			sourceData.isHovered = false;
 			sourceData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay);
@@ -294,9 +293,9 @@ MSU.NestedTooltip = {
 	addTooltipContainerMouseHandler : function(_tooltipContainer)
 	{
 		var self = this;
-		var tooltipData = _tooltipContainer.data("msu-nested");
 		_tooltipContainer.on('mouseenter.msu-tooltip-container', function (_event)
 		{
+			var tooltipData = $(this).data("msu-nested");
 			self.clearTimeouts(tooltipData);
 			tooltipData.isHovered = true;
 			if (!tooltipData.isLocked)
@@ -315,6 +314,7 @@ MSU.NestedTooltip = {
 		});
 		_tooltipContainer.on('mouseleave.msu-tooltip-container', function (_event)
 		{
+			var tooltipData = $(this).data("msu-nested");
 			self.clearTimeouts(tooltipData);
 			tooltipData.isHovered = false;
 			tooltipData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay);
