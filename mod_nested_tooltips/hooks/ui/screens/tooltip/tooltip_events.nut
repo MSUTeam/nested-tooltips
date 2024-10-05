@@ -10,7 +10,7 @@
 			catch (error)
 			{
 				::NestedTooltips.Mod.Debug.printWarning(format("Could not fetch nested tooltip for skill %s, so returning base skill tooltip. Error: %s", _skill.getID(), error));
-				return _skill.skill.getTooltip();
+				return _skill.isActive() ? _skill.skill.getDefaultUtilityTooltip() : _skill.skill.getTooltip();
 			}
 		}
 
