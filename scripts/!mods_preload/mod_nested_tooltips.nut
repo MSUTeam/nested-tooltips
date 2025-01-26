@@ -17,6 +17,7 @@
 
 	::NestedTooltips.Mod.Registry.addModSource(::MSU.System.Registry.ModSourceDomain.GitHub, ::NestedTooltips.GitHubURL);
 	::NestedTooltips.Mod.Registry.setUpdateSource(::MSU.System.Registry.ModSourceDomain.GitHub);
+	::include("mod_nested_tooltips/modsettings");
 
 	::NestedTooltips.Mod.Debug.enable();
 

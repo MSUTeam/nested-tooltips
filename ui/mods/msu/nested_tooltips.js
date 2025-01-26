@@ -2,8 +2,9 @@ MSU.NestedTooltip = {
 	__regexp : /(?:\[|&#91;)tooltip=([\w\.]+?)\.(.+?)(?:\]|&#93;)(.*?)(?:\[|&#91;)\/tooltip(?:\]|&#93;)/gm,
 	__imgRegexp : /(?:\[|&#91;)imgtooltip=([\w\.]+?)\.(.+?)(?:\]|&#93;)(.*?)(?:\[|&#91;)\/imgtooltip(?:\]|&#93;)/gm,
 	__tooltipStack : [],
-	__tooltipHideDelay : 100,
-	__tooltipShowDelay : 200,
+	__tooltipHideDelay : function(){ return MSU.getSettingValue("mod_nested_tooltips", "hideDelay")}, // default 100,
+	__tooltipShowDelay : function(){ return MSU.getSettingValue("mod_nested_tooltips", "showDelay")}, // default 200,
+	__tooltipLockDelay : function(){ return MSU.getSettingValue("mod_nested_tooltips", "lockDelay")}, // default 1000,
 	__showTooltipTimeout : null,
 	KeyImgMap : {},
 	TextStyle: "",
@@ -81,7 +82,7 @@ MSU.NestedTooltip = {
 			clearTimeout(self.__showTooltipTimeout);
 			self.__showTooltipTimeout = setTimeout(function(){
 				self.onShowTooltipTimerExpired(tooltipSource, _tooltipParams);
-			}, _tooltipParams.isTileTooltip === true ? 0 : self.__tooltipShowDelay);
+			}, _tooltipParams.isTileTooltip === true ? 0 : self.__tooltipShowDelay());
 
 			tooltipSource.on('mouseleave.msu-tooltip-loading', function (_event)
 			{
@@ -246,7 +247,7 @@ MSU.NestedTooltip = {
 
 		progressImage.velocity({ opacity: 0 },
 		{
-	        duration: 1000,
+	        duration: self.__tooltipLockDelay(),
 			begin: function()
 			{
 				progressImage.css("opacity", 1)
@@ -280,14 +281,14 @@ MSU.NestedTooltip = {
 			var sourceData = $(this).data('msu-nested');
 			self.clearTimeouts(sourceData);
 			sourceData.isHovered = true;
-			sourceData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay);
+			sourceData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay());
 		});
 		_sourceContainer.on('mouseleave.msu-tooltip-showing remove.msu-tooltip-showing', function (_event)
 		{
 			var sourceData = $(this).data('msu-nested');
 			self.clearTimeouts(sourceData);
 			sourceData.isHovered = false;
-			sourceData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay);
+			sourceData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay());
 		});
 	},
 	addTooltipContainerMouseHandler : function(_tooltipContainer)
@@ -304,7 +305,7 @@ MSU.NestedTooltip = {
 				setTimeout(function(){
 					self.cleanSourceContainer(tooltipData.sourceContainer);
 					return;
-				}, self.__tooltipHideDelay)
+				}, self.__tooltipHideDelay())
 			}
 			else
 			{
@@ -317,7 +318,7 @@ MSU.NestedTooltip = {
 			var tooltipData = $(this).data("msu-nested");
 			self.clearTimeouts(tooltipData);
 			tooltipData.isHovered = false;
-			tooltipData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay);
+			tooltipData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay());
 		});
 		_tooltipContainer.on('mousedown.msu-tooltip-container', function (_event)
 		{
