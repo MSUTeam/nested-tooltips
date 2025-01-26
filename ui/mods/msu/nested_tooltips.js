@@ -2,7 +2,7 @@ MSU.NestedTooltip = {
 	__regexp : /(?:\[|&#91;)tooltip=([\w\.]+?)\.(.+?)(?:\]|&#93;)(.*?)(?:\[|&#91;)\/tooltip(?:\]|&#93;)/gm,
 	__imgRegexp : /(?:\[|&#91;)imgtooltip=([\w\.]+?)\.(.+?)(?:\]|&#93;)(.*?)(?:\[|&#91;)\/imgtooltip(?:\]|&#93;)/gm,
 	__tooltipStack : [],
-	__tooltipHideDelay : function(){ return MSU.getSettingValue("mod_nested_tooltips", "hideDelay")}, // default 100,
+	__passThroughData : {},
 	__tooltipHideDelay : function(){ return MSU.getSettingValue(MSU.ID, "hideDelay")}, // default 100,
 	__tooltipShowDelay : function(){ return MSU.getSettingValue(MSU.ID, "showDelay")}, // default 200,
 	__tooltipLockDelay : function(){ return MSU.getSettingValue(MSU.ID, "lockDelay")}, // default 1000,
@@ -101,18 +101,19 @@ MSU.NestedTooltip = {
 		// ghetto clone to get new ref
 		_tooltipParams = JSON.parse(JSON.stringify(_tooltipParams));
 
-		if (this.__tooltipStack.length > 0)
+		if (!this.isStackEmpty())
 		{
 			// check if this is within the same chain of nested tooltips, or if we need to clear the stack and start a new chain
-			if (this.__tooltipStack[this.__tooltipStack.length -1].tooltip.container.find(_sourceContainer).length === 0)
+			if (this.getTopOfStack().tooltip.container.find(_sourceContainer).length === 0)
 			{
 				self.clearStack();
 			}
 			// If we already have tooltips in the stack, we want to fetch the one from the first tooltip that will have received the entityId from the vanilla function
 			else
 			{
-				$.each(this.__tooltipStack[0].dataToPass, function(_key, _value)
+				$.each(self.__passThroughData, function(_key, _value)
 				{
+					// don't overwrite parameters we already have
 					if (_key in _tooltipParams)
 						return;
 					_tooltipParams[_key] = _value;
@@ -140,6 +141,9 @@ MSU.NestedTooltip = {
 	},
 	updateStack : function ()
 	{
+		// descends the stack and removes tooltips until it finds one that should remain:
+		// - Either its source is hovered and it's still on the screen
+		// - Or the resulting tooltip is hovered and still on the screen
 		for (var i = this.__tooltipStack.length - 1; i >= 0; i--)
 		{
 			var pairData = this.__tooltipStack[i];
@@ -163,7 +167,7 @@ MSU.NestedTooltip = {
 	{
 		return this.isStackEmpty() ? null : this.__tooltipStack[this.__tooltipStack.length - 1];
 	},
-	removeTopTooltip : function()
+	removeTopOfStack : function()
 	{
 		this.removeTooltip(this.__tooltipStack[this.__tooltipStack.length-1]);
 	},
@@ -172,6 +176,11 @@ MSU.NestedTooltip = {
 		this.cleanSourceContainer(_pairData.source.container);
 		this.cleanTooltipContainer(_pairData.tooltip.container);
 		this.__tooltipStack.pop();
+		if (this.isStackEmpty())
+		{
+			// clear refs out of data
+			this.__passThroughData = {};
+		}
 	},
 	cleanSourceContainer : function(_sourceContainer)
 	{
@@ -215,20 +224,18 @@ MSU.NestedTooltip = {
 			source : sourceData,
 			tooltip : tooltipData
 		}
+		this.__tooltipStack.push(stackData);
 
 		// Add data that we'll want to pass to any nested tooltips, such as entityId
-		if (this.__tooltipStack.length == 0)
+		if (this.isStackEmpty())
 		{
-			var dataToPass = {};
 			$.each(_tooltipParams, function(_key, _value)
 			{
 				if (_key === "contentType" || _key === "elementId")
 					return;
-				dataToPass[_key] = _value;
+				self.__passThroughData[_key] = _value;
 			})
-			stackData.dataToPass = dataToPass;
 		}
-		this.__tooltipStack.push(stackData);
 
 		this.addTooltipLockHandler(tooltipContainer, _sourceContainer);
 
@@ -330,10 +337,10 @@ MSU.NestedTooltip = {
 			if (_event.which == 1)
 			{
 				_event.stopPropagation();
-				self.removeTopTooltip();
-				if (self.__tooltipStack.length > 0)
+				self.removeTopOfStack();
+				if (!self.isStackEmpty())
 				{
-					self.__tooltipStack[self.__tooltipStack.length-1].tooltip.container.trigger('mouseenter.msu-tooltip-container');
+					self.getTopOfStack().tooltip.container.trigger('mouseenter.msu-tooltip-container');
 				}
 			}
 		});
