@@ -158,6 +158,10 @@ MSU.NestedTooltip = {
 	{
 		return this.__tooltipStack.length === 0;
 	},
+	getTopOfStack : function ()
+	{
+		return this.isStackEmpty() ? null : this.__tooltipStack[this.__tooltipStack.length - 1];
+	},
 	removeTopTooltip : function()
 	{
 		this.removeTooltip(this.__tooltipStack[this.__tooltipStack.length-1]);
@@ -455,6 +459,22 @@ $(document).on('mouseenter.msu-tooltip-source', '.msu-nested-tooltip', function(
 	}
 	MSU.NestedTooltip.getBindFunction(data).call(this);
 })
+
+// key listener for the LockTooltipKeyboard keybind
+document.addEventListener('keydown', function( _event )
+{
+	if (!MSU.Keybinds.isKeybindPressed(MSU.ID, "LockTooltipKeyboard", _event))
+		return;
+	var stackData = MSU.NestedTooltip.getTopOfStack();
+	if (stackData == null)
+		return;
+	var progressImage = stackData.tooltip.container.find(".tooltip-progress-bar");
+	if (!progressImage)
+		return;
+	_event.stopPropagation();
+	progressImage.velocity("finish");
+	return;
+});
 
 TooltipModule.prototype.showTileTooltip = function()
 {
