@@ -3,10 +3,164 @@ MSU.NestedTooltip = {
 	__imgRegexp : /(?:\[|&#91;)imgtooltip=([\w\.]+?)\.(.+?)(?:\]|&#93;)(.*?)(?:\[|&#91;)\/imgtooltip(?:\]|&#93;)/gm,
 	__tooltipStack : [],
 	__passThroughData : {},
-	__getTooltipHideDelay : function(){ return MSU.getSettingValue(MSU.ID, "hideDelay")}, // default 100,
-	__getTooltipShowDelay : function(){ return MSU.getSettingValue(MSU.ID, "showDelay")}, // default 200,
-	__getTooltipLockDelay : function(){ return MSU.getSettingValue(MSU.ID, "lockDelay")}, // default 1000,
-	__showTooltipTimeout : null,
+	Events : {
+		__lastMouseX : 0,
+		__lastMouseY : 0,
+		__Timers : {
+			"SHOW" : null,
+			"HIDE" : null,
+			"LOCK" : null,
+		},
+		__TimerDelayGetters : {
+			"SHOW" :  function(){ return MSU.getSettingValue(MSU.ID, "showDelay")}, // default 200,
+			"HIDE" :  function(){ return MSU.getSettingValue(MSU.ID, "hideDelay")}, // default 100,
+			"LOCK" :  function(){ return MSU.getSettingValue(MSU.ID, "lockDelay")}, // default 1000,
+		},
+		setTimer : function(_type, _func)
+		{
+			if (!(_type in this.__Timers))
+			{
+				throw "Type " + _type + " not a valid MSU.NestedTooltip.Timer!"
+			}
+			if (this.__Timers[_type] != null) {
+				clearTimeout(this.__Timers[_type]);
+			}
+			this.__Timers[_type] = setTimeout(_func, this.__TimerDelayGetters[_type]());
+		},
+		cancelTimer : function(_type)
+		{
+			if (!(_type in this.__Timers))
+			{
+				throw "Type " + _type + " not a valid MSU.NestedTooltip.Timer!"
+			}
+			clearTimeout(this.__Timers[_type]);
+			this.__Timers[_type] = null;
+		},
+
+        // Combined handler for source initialization
+        // classes: .msu-tooltip-source, .msu-nested-tooltip-source
+        // msu-tooltip-source -> bottom element, a traditional tooltip source like a skill icon or something
+        // msu-nested-tooltip-source -> a link within a tooltip
+        onSourceEnter : function(event) {
+        	MSU.NestedTooltip.Events.cancelTimer("SHOW");
+            var $element = $(event.currentTarget);
+
+            // Handle nested tooltip source
+            if ($element.hasClass('msu-nested-tooltip-source')) {
+                var data = {
+                    contentType : 'msu-nested-tooltip-source',
+                    elementId : this.dataset.msuNestedId,
+                    modId : this.dataset.msuNestedMod
+                };
+                MSU.NestedTooltip.bindToElement($element, data);
+            }
+
+            // Common source handling
+            if ($element.data("msu-nested") === undefined) {
+                MSU.NestedTooltip.Events.setTimer("SHOW", function() {
+                    MSU.NestedTooltip.onShowTooltipTimerExpired($element);
+                });
+            }
+        },
+        onSourceLeave : function(event) {
+            MSU.NestedTooltip.Events.cancelTimer("SHOW");
+            MSU.NestedTooltip.Events.setTimer("HIDE", MSU.NestedTooltip.updateStack.bind(MSU.NestedTooltip));
+        },
+
+        onTooltipEnter : function(event)
+        {
+        	var $element = $(this);
+        	var data = $element.data("msu-nested");
+        	if (!data || !data.isLocked) {
+        	    $element.hide();
+        	    MSU.NestedTooltip.Events.setTimer("HIDE", MSU.NestedTooltip.updateStack.bind(MSU.NestedTooltip));
+        	    return;
+        	}
+        	data.isHovered = true;
+    		$(".ui-control-tooltip-module").addClass("msu-nested-tooltip-not-hovered");
+    		$element.removeClass("msu-nested-tooltip-not-hovered");
+        },
+
+        onTooltipLeave : function(event)
+        {
+        	var $element = $(this);
+        	var data = $element.data("msu-nested");
+        	if (data) data.isHovered = false;
+        	MSU.NestedTooltip.Events.setTimer("HIDE", MSU.NestedTooltip.updateStack.bind(MSU.NestedTooltip));
+        },
+
+        // Combined lock handler for both mouse and keyboard
+        onLockRequest : function(event) {
+            var isKeyboard = event.type === 'keydown';
+            // check for item moving due to click
+            var shouldLock = isKeyboard ?
+                MSU.Keybinds.isKeybindPressed(MSU.ID, "LockTooltipKeyboard", event) :
+                MSU.Keybinds.isMousebindPressed(MSU.ID, "LockTooltip");
+
+            if (!shouldLock){
+            	return;
+            };
+
+            var progressImage;
+            if (isKeyboard) {
+                var stackData = MSU.NestedTooltip.getTopOfStack();
+                if (!stackData) return;
+                progressImage = stackData.tooltip.container.find(".tooltip-progress-bar");
+            } else {
+                progressImage = $(this).data("msu-nested").tooltipContainer.find(".tooltip-progress-bar");
+            }
+
+            if (!progressImage) return;
+            event.stopPropagation();
+            progressImage.velocity("finish");
+        },
+
+        onTooltipClick : function(event) {
+            if (event.which !== 1) return;
+
+            event.stopPropagation();
+            MSU.NestedTooltip.removeTopOfStack();
+
+            if (!MSU.NestedTooltip.isStackEmpty()) {
+                MSU.NestedTooltip.getTopOfStack().tooltip.container
+                    .trigger('mouseenter.msu-tooltip-container');
+            }
+        },
+
+        // to confirm that we are still hovering an element, as .locked stuff isn't reliable. We should probably move this event handler to MSU.
+        onMouseMove: function(event) {
+            this.__lastMouseX = event.clientX;
+            this.__lastMouseY = event.clientY;
+        },
+        isActuallyHovered: function(element) {
+            var mouseX = MSU.NestedTooltip.Events.__lastMouseX;
+            var mouseY = MSU.NestedTooltip.Events.__lastMouseY;
+            var elementUnderCursor = document.elementFromPoint(mouseX, mouseY);
+            if (!elementUnderCursor) return false;
+            return element.is(elementUnderCursor) || element.has(elementUnderCursor).length > 0;
+        },
+
+        initHandlers: function() {
+            $(document)
+            	// this should be moved to MSU
+           		.on('mousemove.msu-tooltip', this.onMouseMove.bind(this))
+                // Source initialization and tooltip showing
+                .on("mouseenter.msu-tooltip", ".msu-tooltip-source, .msu-nested-tooltip-source", this.onSourceEnter)
+                .on("mouseleave.msu-tooltip", ".msu-tooltip-source, .msu-nested-tooltip-source", this.onSourceLeave)
+
+                // entering tooltip containers
+                .on("mouseenter.msu-tooltip", ".ui-control-tooltip-module", this.onTooltipEnter)
+                .on("mouseleave.msu-tooltip", ".msu-nested-tooltip-sources-within", this.onTooltipLeave)
+
+                // Lock handling
+                .on("mousedown.msu-tooltip", ".msu-tooltip-source", this.onLockRequest)
+                .on("keydown.msu-tooltip", this.onLockRequest)
+
+                // Click handling
+                .on("mousedown.msu-tooltip", ".ui-control-tooltip-module", this.onTooltipClick);
+        }
+	},
+
 	KeyImgMap : {},
 	TextStyle: "",
 	TileTooltipDiv : {
@@ -55,89 +209,8 @@ MSU.NestedTooltip = {
 		},
 		trigger : function()
 		{
-			this.container.trigger('mouseenter.msu-tooltip-source');
+			this.container.trigger('mouseenter.msu-tooltip');
 		}
-	},
-	bindToElement : function (_element, _tooltipParams)
-	{
-		this.unbindFromElement(_element);
-		_element.on('mouseenter.msu-tooltip-source', this.getBindFunction(_tooltipParams));
-	},
-	unbindFromElement : function (_element)
-	{
-		var data = _element.data('msu-nested');
-		if (data !== undefined)
-		{
-			data.isHovered = false;
-		}
-		_element.off('.msu-tooltip-source');
-		this.updateStack();
-	},
-	getBindFunction : function (_tooltipParams)
-	{
-		return function (_event)
-		{
-			var self = MSU.NestedTooltip;
-			var tooltipSource = $(this);
-			if (tooltipSource.data('msu-nested') !== undefined) return;
-			clearTimeout(self.__showTooltipTimeout);
-			self.__showTooltipTimeout = setTimeout(function(){
-				self.onShowTooltipTimerExpired(tooltipSource, _tooltipParams);
-			}, _tooltipParams.isTileTooltip === true ? 0 : self.__getTooltipShowDelay());
-
-			tooltipSource.on('mouseleave.msu-tooltip-loading', function (_event)
-			{
-				clearTimeout(self.__showTooltipTimeout);
-				tooltipSource.off('mouseleave.msu-tooltip-loading');
-			})
-
-		}
-	},
-	onShowTooltipTimerExpired : function(_sourceContainer, _tooltipParams)
-	{
-		var self = this;
-		clearTimeout(self.__showTooltipTimeout);
-		_sourceContainer.off('.msu-tooltip-loading');
-		// ghetto clone to get new ref
-		_tooltipParams = JSON.parse(JSON.stringify(_tooltipParams));
-
-		if (!this.isStackEmpty())
-		{
-			// check if this is within the same chain of nested tooltips, or if we need to clear the stack and start a new chain
-			if (this.getTopOfStack().tooltip.container.find(_sourceContainer).length === 0)
-			{
-				self.clearStack();
-			}
-			// If we already have tooltips in the stack, we want to fetch the one from the first tooltip that will have received the entityId from the vanilla function
-			else
-			{
-				$.each(self.__passThroughData, function(_key, _value)
-				{
-					// don't overwrite parameters we already have
-					if (_key in _tooltipParams)
-						return;
-					_tooltipParams[_key] = _value;
-				})
-			}
-		}
-		Screens.TooltipScreen.mTooltipModule.notifyBackendQueryTooltipData(_tooltipParams, function (_backendData)
-		{
-			if (_backendData === undefined || _backendData === null)
-		    {
-		    	if (_tooltipParams.isTileTooltip)
-		    		self.TileTooltipDiv.shrink();
-		        return;
-		    }
-		    if (_tooltipParams.isTileTooltip)
-		    	self.TileTooltipDiv.expand();
-
-
-		    // vanilla behavior, when sth moved into tile while the data was being fetched
-		    if (_tooltipParams.contentType === 'tile' || _tooltipParams.contentType === 'tile-entity')
-		    	Screens.TooltipScreen.mTooltipModule.updateContentType(_backendData)
-
-			self.createTooltip(_backendData, _sourceContainer, _tooltipParams);
-		});
 	},
 	updateStack : function ()
 	{
@@ -147,8 +220,17 @@ MSU.NestedTooltip = {
 		for (var i = this.__tooltipStack.length - 1; i >= 0; i--)
 		{
 			var pairData = this.__tooltipStack[i];
-			if ((pairData.source.isHovered && pairData.source.container.is(":visible")) || (pairData.tooltip.isHovered && pairData.tooltip.container.is(":visible")))
-				return;
+			var sourceValid = pairData.source.isHovered &&
+			                pairData.source.container.is(":visible") &&
+			                this.Events.isActuallyHovered(pairData.source.container);
+
+			var tooltipValid = pairData.tooltip.isHovered &&
+			                 pairData.tooltip.container.is(":visible") &&
+			                 (pairData.tooltip.isLocked || this.Events.isActuallyHovered(pairData.tooltip.container));
+
+			if (sourceValid || tooltipValid) {
+			    return;
+			}
 			this.removeTooltip(pairData, i);
 		}
 	},
@@ -184,20 +266,84 @@ MSU.NestedTooltip = {
 	},
 	cleanSourceContainer : function(_sourceContainer)
 	{
-		_sourceContainer.off('.msu-tooltip-showing');
 		var data = _sourceContainer.data("msu-nested");
 		if (data === undefined)
 			return;
-		this.clearTimeouts(data);
 		if (data.tooltipParams.isTileTooltip)
 			this.TileTooltipDiv.shrink();
-		_sourceContainer.removeData('msu-nested');
+		_sourceContainer.removeData("msu-nested");
 	},
 	cleanTooltipContainer : function(_tooltipContainer)
 	{
-		var data = _tooltipContainer.data("msu-nested");
-		this.clearTimeouts(data);
 		_tooltipContainer.remove();
+	},
+	bindToElement : function (_element, _tooltipParams)
+	{
+		this.unbindFromElement(_element);
+		_element.data('msu-tooltip-parameters', _tooltipParams);
+		_element.addClass('msu-tooltip-source');
+		_element.on("mouseenter", this.Events.onSourceEnter);
+	},
+	unbindFromElement : function (_element)
+	{
+		_element.removeData("msu-nested");
+		_element.removeData('msu-tooltip-parameters');
+		_element.removeClass('msu-tooltip-source');
+		this.updateStack();
+	},
+	onShowTooltipTimerExpired : function(_sourceContainer)
+	{
+		var self = this;
+		this.Events.cancelTimer("SHOW")
+		var tooltipParams = _sourceContainer.data('msu-tooltip-parameters');
+		if (tooltipParams === undefined) // it's either a bug or a tile tooltip (worldmap) with no content
+		{
+			return;
+		}
+		// ghetto clone to get new ref
+		cloned_tooltipParams = JSON.parse(JSON.stringify(tooltipParams));
+
+		if (!this.isStackEmpty())
+		{
+			// check if this is within the same chain of nested tooltips, or if we need to clear the stack and start a new chain
+			if (this.getTopOfStack().tooltip.container.find(_sourceContainer).length === 0)
+			{
+				this.clearStack();
+			}
+			// If we already have tooltips in the stack, we want to fetch the one from the first tooltip that will have received the entityId from the vanilla function
+			else
+			{
+				$.each(this.__passThroughData, function(_key, _value)
+				{
+					// don't overwrite parameters we already have
+					if (_key in cloned_tooltipParams)
+						return;
+					cloned_tooltipParams[_key] = _value;
+				})
+			}
+		}
+		Screens.TooltipScreen.mTooltipModule.notifyBackendQueryTooltipData(cloned_tooltipParams, function (_backendData)
+		{
+			if (_backendData === undefined || _backendData === null || _backendData.length == 0)
+		    {
+		    	if (cloned_tooltipParams.isTileTooltip)
+		    		self.TileTooltipDiv.shrink();
+		        return;
+		    }
+		    if (cloned_tooltipParams.isTileTooltip)
+		    	self.TileTooltipDiv.expand();
+
+		    // vanilla behavior, when sth moved into tile while the data was being fetched
+		    if (cloned_tooltipParams.contentType === 'tile' || cloned_tooltipParams.contentType === 'tile-entity')
+		    	Screens.TooltipScreen.mTooltipModule.updateContentType(_backendData)
+		    if (_backendData[0].contentType !== undefined && _backendData[0].contentType !== null)
+		    {
+		    	cloned_tooltipParams.contentType = _backendData[0].contentType
+		    }
+
+
+			self.createTooltip(_backendData, _sourceContainer, cloned_tooltipParams);
+		});
 	},
 	createTooltip : function (_backendData, _sourceContainer, _tooltipParams)
 	{
@@ -205,26 +351,30 @@ MSU.NestedTooltip = {
 		var tooltipContainer = this.getTooltipFromData(_backendData, _tooltipParams.contentType);
 		var sourceData = {
 			container : _sourceContainer,
-			updateStackTimeout : null,
 			isHovered : true,
 			tooltipContainer : tooltipContainer,
 			tooltipParams : _tooltipParams
 		};
-		_sourceContainer.data('msu-nested', sourceData);
+		_sourceContainer.data("msu-nested", sourceData);
 		var tooltipData = {
 			container : tooltipContainer,
-			updateStackTimeout : null,
 			isHovered : false,
 			isLocked : false,
 			sourceContainer : _sourceContainer
 		};
 
-		tooltipContainer.data('msu-nested', tooltipData);
+		tooltipContainer.data("msu-nested", tooltipData);
 		var stackData = {
 			source : sourceData,
 			tooltip : tooltipData
 		}
 		this.__tooltipStack.push(stackData);
+
+		if (tooltipContainer.find(".msu-nested-tooltip-source").length > 0)
+		{
+			tooltipContainer.addClass("msu-nested-tooltip-sources-within");
+			this.startTooltipLocking(tooltipContainer, _sourceContainer);
+		}
 
 		// Add data that we'll want to pass to any nested tooltips, such as entityId
 		if (this.isStackEmpty())
@@ -237,29 +387,30 @@ MSU.NestedTooltip = {
 			})
 		}
 
-		this.addTooltipLockHandler(tooltipContainer, _sourceContainer);
-
-		this.addSourceContainerMouseHandler(_sourceContainer);
-
-		this.addTooltipContainerMouseHandler(tooltipContainer);
 
 		$('body').append(tooltipContainer)
 		this.positionTooltip(tooltipContainer, _backendData, _sourceContainer);
-	},
-	addTooltipLockHandler : function(_tooltipContainer, _sourceContainer)
-	{
-		var nestedItems = _tooltipContainer.find(".msu-nested-tooltip");
-		if (nestedItems.length == 0)
-			return;
-		var self = this;
 
-		_tooltipContainer.addClass("msu-nested-tooltips-within");
+	},
+	getTooltipFromData : function (_backendData, _contentType)
+	{
+		var tempContainer = Screens.TooltipScreen.mTooltipModule.mContainer;
+		var ret = $('<div class="tooltip-module ui-control-tooltip-module msu-nested-tooltip"/>');
+		Screens.TooltipScreen.mTooltipModule.mContainer = ret;
+		Screens.TooltipScreen.mTooltipModule.buildFromData(_backendData, false, _contentType);
+		this.parseImgPaths(ret);
+		Screens.TooltipScreen.mTooltipModule.mContainer = tempContainer;
+		return ret;
+	},
+	startTooltipLocking : function(_tooltipContainer, _sourceContainer)
+	{
+		var self = this;
 		var progressImage = $("<div class='tooltip-progress-bar'/>")
 			.appendTo(_tooltipContainer)
 
 		progressImage.velocity({ opacity: 0 },
 		{
-	        duration: self.__getTooltipLockDelay(),
+	        duration: self.Events.__TimerDelayGetters["LOCK"](),
 			begin: function()
 			{
 				progressImage.css("opacity", 1)
@@ -268,7 +419,7 @@ MSU.NestedTooltip = {
 			{
 				progressImage.css("opacity", 1);
 				progressImage.css("background-image", 'url("coui://gfx/ui/icons/icon_locked.png")');
-				var data = _tooltipContainer.data('msu-nested');
+				var data = _tooltipContainer.data("msu-nested");
 				if (data === undefined)
 				{
 					return;
@@ -276,84 +427,6 @@ MSU.NestedTooltip = {
 				data.isLocked = true;
 	        }
 	   });
-
-		_sourceContainer.mousedown(function(_event){
-			if (MSU.Keybinds.isMousebindPressed(MSU.ID, "LockTooltip"))
-			{
-				_event.stopPropagation();
-				progressImage.velocity("finish");
-			}
-		})
-	},
-	addSourceContainerMouseHandler : function(_sourceContainer)
-	{
-		var self = this;
-		_sourceContainer.on('mouseenter.msu-tooltip-showing', function(_event)
-		{
-			var sourceData = $(this).data('msu-nested');
-			self.clearTimeouts(sourceData);
-			sourceData.isHovered = true;
-			sourceData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__getTooltipHideDelay());
-		});
-		_sourceContainer.on('mouseleave.msu-tooltip-showing remove.msu-tooltip-showing', function (_event)
-		{
-			var sourceData = $(this).data('msu-nested');
-			self.clearTimeouts(sourceData);
-			sourceData.isHovered = false;
-			sourceData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__getTooltipHideDelay());
-		});
-	},
-	addTooltipContainerMouseHandler : function(_tooltipContainer)
-	{
-		var self = this;
-		_tooltipContainer.on('mouseenter.msu-tooltip-container', function (_event)
-		{
-			var tooltipData = $(this).data("msu-nested");
-			self.clearTimeouts(tooltipData);
-			tooltipData.isHovered = true;
-			if (!tooltipData.isLocked)
-			{
-				_tooltipContainer.hide();
-				setTimeout(function(){
-					self.cleanSourceContainer(tooltipData.sourceContainer);
-					return;
-				}, self.__getTooltipHideDelay())
-			}
-			else
-			{
-				$(".ui-control-tooltip-module").addClass("msu-nested-tooltip-not-hovered");
-				_tooltipContainer.removeClass("msu-nested-tooltip-not-hovered");
-			}
-		});
-		_tooltipContainer.on('mouseleave.msu-tooltip-container', function (_event)
-		{
-			var tooltipData = $(this).data("msu-nested");
-			self.clearTimeouts(tooltipData);
-			tooltipData.isHovered = false;
-			tooltipData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__getTooltipHideDelay());
-		});
-		_tooltipContainer.on('mousedown.msu-tooltip-container', function (_event)
-		{
-			if (_event.which == 1)
-			{
-				_event.stopPropagation();
-				self.removeTopOfStack();
-				if (!self.isStackEmpty())
-				{
-					self.getTopOfStack().tooltip.container.trigger('mouseenter.msu-tooltip-container');
-				}
-			}
-		});
-	},
-	getTooltipFromData : function (_backendData, _contentType)
-	{
-		var tempContainer = Screens.TooltipScreen.mTooltipModule.mContainer;
-		var ret = $('<div class="tooltip-module ui-control-tooltip-module"/>');
-		Screens.TooltipScreen.mTooltipModule.mContainer = ret;
-		Screens.TooltipScreen.mTooltipModule.buildFromData(_backendData, false, _contentType);
-		this.parseImgPaths(ret);
-		Screens.TooltipScreen.mTooltipModule.mContainer = tempContainer;
-		return ret;
 	},
 	positionTooltip : function (_tooltip, _backendData, _targetDIV)
 	{
@@ -372,7 +445,7 @@ MSU.NestedTooltip = {
 	getTooltipLinkHTML : function (_mod, _id, _text)
 	{
 		_text = _text || "";
-		return '<div class="msu-nested-tooltip" style="' + this.TextStyle + '" data-msu-nested-mod="' + _mod + '" data-msu-nested-id="' + _id + '">' + _text + '</div>';
+		return '<div class="msu-nested-tooltip-source" style="' + this.TextStyle + '" data-msu-nested-mod="' + _mod + '" data-msu-nested-id="' + _id + '">' + _text + '</div>';
 	},
 	getTooltipImageHTML : function (_mod, _id, _src)
 	{
@@ -411,14 +484,6 @@ MSU.NestedTooltip = {
 			}
 		})
 	},
-	clearTimeouts : function(_data)
-	{
-		if (_data.updateStackTimeout !== undefined && _data.updateStackTimeout !== null)
-		{
-			clearTimeout(_data.updateStackTimeout);
-			_data.updateStackTimeout = null;
-		}
-	},
 	reloadTooltip : function(_element, _newParams)
 	{
 		if (this.isStackEmpty())
@@ -434,6 +499,7 @@ MSU.NestedTooltip = {
 		sourceContainer.trigger('mouseenter.msu-tooltip-source');
 	},
 }
+MSU.NestedTooltip.Events.initHandlers();
 MSU.XBBCODE_process = XBBCODE.process;
 // I hate this but the XBBCODE plugin doesn't allow dynamically adding tags
 // there's a fork that does here https://github.com/patorjk/Extendible-BBCode-Parser
@@ -458,31 +524,6 @@ $.fn.unbindTooltip = function ()
 	MSU.NestedTooltip.unbindFromElement(this);
 };
 
-$(document).on('mouseenter.msu-tooltip-source', '.msu-nested-tooltip', function()
-{
-	var data = {
-		contentType : 'msu-nested-tooltip',
-		elementId : this.dataset.msuNestedId,
-		modId : this.dataset.msuNestedMod
-	}
-	MSU.NestedTooltip.getBindFunction(data).call(this);
-})
-
-// key listener for the LockTooltipKeyboard keybind
-document.addEventListener('keydown', function( _event )
-{
-	if (!MSU.Keybinds.isKeybindPressed(MSU.ID, "LockTooltipKeyboard", _event))
-		return;
-	var stackData = MSU.NestedTooltip.getTopOfStack();
-	if (stackData == null)
-		return;
-	var progressImage = stackData.tooltip.container.find(".tooltip-progress-bar");
-	if (!progressImage)
-		return;
-	_event.stopPropagation();
-	progressImage.velocity("finish");
-	return;
-});
 
 TooltipModule.prototype.showTileTooltip = function()
 {
@@ -491,7 +532,7 @@ TooltipModule.prototype.showTileTooltip = function()
 		return;
 	}
 	MSU.NestedTooltip.updateStack();
-	if (MSU.NestedTooltip.isStackEmpty())
+	if (MSU.NestedTooltip.isStackEmpty() && MSU.NestedTooltip.Events.__Timers["SHOW"] == null)
 	{
 		MSU.NestedTooltip.TileTooltipDiv.bind(this.mCurrentData);
 		MSU.NestedTooltip.TileTooltipDiv.cursorPos = {top: this.mLastMouseY, left: this.mLastMouseX};
