@@ -118,6 +118,23 @@ MSU.NestedTooltip = {
 			clearTimeout(this.__Timers[_type]);
 			this.__Timers[_type] = null;
 		},
+
+		onNestedSourceEnter : function(event) {
+		    var $element = $(event.currentTarget);
+		    $element.data("isHovered", true);
+		    var data = {
+		        contentType : 'msu-nested-tooltip-source',
+		        elementId : this.dataset.msuNestedId,
+		        modId : this.dataset.msuNestedMod
+		    };
+		    MSU.NestedTooltip.bindToElement($element, data);
+		},
+
+		onNestedSourceLeave : function(event) {
+			var $element = $(event.currentTarget);
+		    MSU.NestedTooltip.unbindFromElement($element);
+		},
+
         // Combined handler for source initialization
         // classes: .msu-tooltip-source, .msu-nested-tooltip-source
         // msu-tooltip-source -> bottom element, a traditional tooltip source like a skill icon or something
@@ -239,6 +256,9 @@ MSU.NestedTooltip = {
             	// this should be moved to MSU
            		.on('mousemove.msu-tooltip', this.onMouseMove.bind(this))
                 // Source initialization and tooltip showing
+                .on("mouseleave.msu-tooltip", ".msu-nested-tooltip-source", this.onNestedSourceLeave)
+                .on("mouseenter.msu-tooltip", ".msu-nested-tooltip-source", this.onNestedSourceEnter)
+
                 .on("mouseleave.msu-tooltip", ".msu-tooltip-source, .msu-nested-tooltip-source", this.onSourceLeave)
                 .on("mouseenter.msu-tooltip", ".msu-tooltip-source, .msu-nested-tooltip-source", this.onSourceEnter)
 
@@ -360,15 +380,6 @@ MSU.NestedTooltip = {
 		_element.removeData('msu-tooltip-parameters');
 		_element.removeClass('msu-tooltip-source');
 	},
-	bindNestedSources: function(_, element)
-	{
-		var data = {
-		    contentType : 'msu-nested-tooltip-source',
-		    elementId : element.dataset.msuNestedId,
-		    modId : element.dataset.msuNestedMod
-		};
-		MSU.NestedTooltip.bindToElement($(element), data);
-	},
 	onShowTooltipTimerExpired : function(_sourceContainer)
 	{
 		var self = this;
@@ -433,7 +444,6 @@ MSU.NestedTooltip = {
 		{
 			tooltipContainer.addClass("msu-nested-tooltip-sources-within");
 			this.startTooltipLocking(tooltipContainer, _sourceContainer);
-			nestedSourcesWithin.each(this.bindNestedSources);
 		}
 
 		// Add data that we'll want to pass to any nested tooltips, such as entityId
