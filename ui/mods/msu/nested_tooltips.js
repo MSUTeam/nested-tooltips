@@ -318,9 +318,14 @@ MSU.NestedTooltip = {
 		{
 			MSU.NestedTooltip.unbindFromElement(this.container);
 		},
-		trigger : function()
+
+		triggerEnter : function()
 		{
 			this.container.trigger('mouseenter.msu-tooltip');
+		},
+		triggerLeave : function()
+		{
+			this.container.trigger('mouseleave.msu-tooltip');
 		}
 	},
 	updateStack : function ()
@@ -333,7 +338,7 @@ MSU.NestedTooltip = {
 		{
 			var nestedData = stack[i];
 			var sourceValid = nestedData.sourceContainer.data("isHovered") &&
-			                nestedData.sourContainer.is(":visible") &&
+			                nestedData.sourceContainer.is(":visible") &&
 			                this.Events.isActuallyHovered(nestedData.sourceContainer);
 
 			var tooltipValid = nestedData.tooltipContainer.data("isHovered") &&
@@ -595,13 +600,14 @@ TooltipModule.prototype.showTileTooltip = function()
 	{
 		MSU.NestedTooltip.TileTooltipDiv.bind(this.mCurrentData);
 		MSU.NestedTooltip.TileTooltipDiv.cursorPos = {top: this.mLastMouseY, left: this.mLastMouseX};
-		MSU.NestedTooltip.TileTooltipDiv.trigger();
+		MSU.NestedTooltip.TileTooltipDiv.triggerEnter();
 	}
 };
 
 MSU.TooltipModule_hideTileTooltip = TooltipModule.prototype.hideTileTooltip;
 TooltipModule.prototype.hideTileTooltip = function()
 {
+	MSU.NestedTooltip.TileTooltipDiv.triggerLeave();
 	if (MSU.NestedTooltip.TileTooltipDiv.canShrink())
 	{
 		MSU.NestedTooltip.TileTooltipDiv.shrink()
