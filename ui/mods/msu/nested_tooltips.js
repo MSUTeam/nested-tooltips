@@ -242,12 +242,9 @@ MSU.NestedTooltip = {
         isActuallyHovered: function(element) {
             var mouseX = MSU.NestedTooltip.Events.__lastMouseX;
             var mouseY = MSU.NestedTooltip.Events.__lastMouseY;
-            var elementsUnderCursor = document.elementsFromPoint(mouseX, mouseY);
-            if (elementsUnderCursor.length == 0) return false;
-            for (el in elementsUnderCursor)
-            {
-            	if (element.is(el) || element.has(el)) return true;
-            }
+            var el = document.elementFromPoint(mouseX, mouseY);
+            if (!el) return false;
+            if (element.is(el) || element.has(el)) return true;
             return false;
         },
 
@@ -552,7 +549,7 @@ MSU.NestedTooltip = {
 	{
 		if (this.TooltipStack.isEmpty())
 			return;
-		var nestedData = this.TooltipStack.peak();
+		var nestedData = this.TooltipStack.peek();
 		var sourceContainer = nestedData.sourceContainer;
 		var sourceParams = nestedData.tooltipParams;
 		if (_element !== undefined && !_element.is(sourceContainer))
