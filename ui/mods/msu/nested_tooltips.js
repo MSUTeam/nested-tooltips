@@ -178,10 +178,9 @@ MSU.NestedTooltip = {
         	    $element.hide();
         	    return;
         	}
+        	MSU.NestedTooltip.updateStack();
     		$(".ui-control-tooltip-module").not($element).addClass("msu-nested-tooltip-not-hovered");
     		$element.removeClass("msu-nested-tooltip-not-hovered");
-
-    		MSU.NestedTooltip.Events.setTimer("HIDE", MSU.NestedTooltip.updateStack.bind(MSU.NestedTooltip));
         },
 
         onTooltipLeave : function(event)
@@ -191,7 +190,6 @@ MSU.NestedTooltip = {
 
         	var $element = $(event.currentTarget);
         	$element.data("isHovered", false);
-        	$element.addClass("msu-nested-tooltip-not-hovered");
 
         	MSU.NestedTooltip.Events.setTimer("HIDE", MSU.NestedTooltip.updateStack.bind(MSU.NestedTooltip));
         },
@@ -345,7 +343,7 @@ MSU.NestedTooltip = {
 			if (sourceValid || tooltipValid) {
 			    return;
 			}
-			this.TooltipStack.pop();
+			this.TooltipStack.popDownToLength(i);
 		}
 	},
 
