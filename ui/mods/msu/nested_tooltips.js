@@ -226,7 +226,7 @@ MSU.NestedTooltip = {
             event.stopPropagation();
             MSU.NestedTooltip.TooltipStack.pop();
 
-            if (!MSU.NestedTooltip.isStackEmpty()) {
+            if (!MSU.NestedTooltip.TooltipStack.isEmpty()) {
                 MSU.NestedTooltip.TooltipStack.peek().tooltipContainer
                     .trigger('mouseenter.msu-tooltip-container');
             }
