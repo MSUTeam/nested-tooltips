@@ -132,6 +132,7 @@ MSU.NestedTooltip = {
 
 		onNestedSourceLeave : function(event) {
 			var $element = $(event.currentTarget);
+			$element.data("isHovered", false);
 		    MSU.NestedTooltip.unbindFromElement($element);
 		},
 
@@ -168,9 +169,6 @@ MSU.NestedTooltip = {
 
         onTooltipEnter : function(event)
         {
-        	MSU.NestedTooltip.Events.cancelTimer("SHOW");
-        	MSU.NestedTooltip.Events.cancelTimer("HIDE");
-
         	var $element = $(event.currentTarget);
         	$element.data("isHovered", true)
         	var data = $element.data("msu-nested");
@@ -291,18 +289,10 @@ MSU.NestedTooltip = {
 			this.container.hide();
 			this.container.offset({top: 0, left: 0});
 		},
-		canShrink : function()
+		isLocked : function()
 		{
-			var sourceData = this.container.data("msu-nested");
-			if (sourceData !== undefined && sourceData !== null)
-			{
-				var nestedData = sourceData.tooltipContainer.data("msu-nested");
-				if (nestedData !== undefined && nestedData.isLocked)
-				{
-					return false;
-				}
-			}
-			return true;
+			var nestedData = this.container.data("msu-nested");
+			return nestedData !== undefined && nestedData !== null && nestedData.isLocked;
 		},
 		bind : function(_params)
 		{
@@ -557,8 +547,37 @@ MSU.NestedTooltip = {
 		this.bindToElement(sourceContainer, _newParams || sourceParams);
 		sourceContainer.trigger('mouseenter.msu-tooltip-source');
 	},
+	showTileTooltip: function(_currentData, _cursorPos)
+	{
+		this.updateStack();
+		if (this.TooltipStack.isEmpty() && this.Events.__Timers["SHOW"] == null)
+		{
+			this.TileTooltipDiv.bind(_currentData);
+			this.TileTooltipDiv.cursorPos = _cursorPos;
+			this.TileTooltipDiv.triggerEnter();
+		}
+	},
+	hideTileTooltip: function()
+	{
+		this.TileTooltipDiv.triggerLeave();
+		if (!this.TileTooltipDiv.isLocked())
+		{
+			this.TileTooltipDiv.shrink()
+			this.TileTooltipDiv.unbind();
+		}
+	},
+	checkTileTooltipMouseMovement: function(_currentData, _cursorPos, _event)
+	{
+		if (!this.TileTooltipDiv.isLocked())
+		{
+			this.hideTileTooltip();
+			this.showTileTooltip(_currentData, _cursorPos, _event);
+		}
+	}
 }
 MSU.NestedTooltip.Events.initHandlers();
+
+
 MSU.XBBCODE_process = XBBCODE.process;
 // I hate this but the XBBCODE plugin doesn't allow dynamically adding tags
 // there's a fork that does here https://github.com/patorjk/Extendible-BBCode-Parser
@@ -573,6 +592,8 @@ XBBCODE.process = function (config)
 	return ret;
 }
 
+
+
 $.fn.bindTooltip = function (_data)
 {
 	MSU.NestedTooltip.bindToElement(this, _data);
@@ -581,34 +602,6 @@ $.fn.bindTooltip = function (_data)
 $.fn.unbindTooltip = function ()
 {
 	MSU.NestedTooltip.unbindFromElement(this);
-};
-
-
-TooltipModule.prototype.showTileTooltip = function()
-{
-	if (this.mCurrentData === undefined || this.mCurrentData === null)
-	{
-		return;
-	}
-	MSU.NestedTooltip.updateStack();
-	if (MSU.NestedTooltip.TooltipStack.isEmpty() && MSU.NestedTooltip.Events.__Timers["SHOW"] == null)
-	{
-		MSU.NestedTooltip.TileTooltipDiv.bind(this.mCurrentData);
-		MSU.NestedTooltip.TileTooltipDiv.cursorPos = {top: this.mLastMouseY, left: this.mLastMouseX};
-		MSU.NestedTooltip.TileTooltipDiv.triggerEnter();
-	}
-};
-
-MSU.TooltipModule_hideTileTooltip = TooltipModule.prototype.hideTileTooltip;
-TooltipModule.prototype.hideTileTooltip = function()
-{
-	MSU.NestedTooltip.TileTooltipDiv.triggerLeave();
-	if (MSU.NestedTooltip.TileTooltipDiv.canShrink())
-	{
-		MSU.NestedTooltip.TileTooltipDiv.shrink()
-		MSU.NestedTooltip.TileTooltipDiv.unbind();
-	}
-	MSU.TooltipModule_hideTileTooltip.call(this);
 };
 
 $.fn.updateTooltip = function (_newParams)
@@ -633,6 +626,53 @@ TooltipModule.prototype.reloadTooltip = function()
 TooltipModule.prototype.hideTooltip = function()
 {
     MSU.NestedTooltip.TooltipStack.clear();
+};
+
+
+TooltipModule.prototype.mouseEnterTile = function(_event)
+{
+	if (_event === null || typeof(_event) != 'object' || !('X' in _event) || !('Y' in _event))
+	{
+		console.error('ERROR: Failed to show Tile Tooltip. Reason: Parameters not valid.');
+		return;
+	}
+
+	// save current mouse position
+	this.mLastMouseX = _event.X;
+	this.mLastMouseY = _event.Y;
+
+	// save data type
+	if ('EntityId' in _event)
+	{
+		this.mCurrentData = { contentType: 'tile-entity', entityId: _event.EntityId };
+	}
+	else
+	{
+		this.mCurrentData = { contentType: 'tile' };
+	}
+
+	MSU.NestedTooltip.showTileTooltip(this.mCurrentData, {top: this.mLastMouseY, left: this.mLastMouseX});
+};
+
+TooltipModule.prototype.mouseHoverTile = function(_event)
+{
+	if (_event === null || typeof(_event) != 'object' || !('X' in _event) || !('Y' in _event))
+	{
+		console.error('ERROR: Failed to show Tile Tooltip. Reason: Parameters not valid.');
+		return;
+	}
+
+	if ((Math.abs(this.mLastMouseX - _event.X) + Math.abs(this.mLastMouseY - _event.Y)) >= this.mMinMouseMovement)
+	{
+		this.mLastMouseX = _event.X;
+		this.mLastMouseY = _event.Y;
+		MSU.NestedTooltip.checkTileTooltipMouseMovement(this.mCurrentData, {top: this.mLastMouseY, left: this.mLastMouseX}, _event);
+	}
+};
+
+TooltipModule.prototype.mouseLeaveTile = function()
+{
+	MSU.NestedTooltip.hideTileTooltip();
 };
 
 MSU.TooltipModule_setupTileTooltip = TooltipModule.prototype.setupTileTooltip;
