@@ -204,16 +204,11 @@ MSU.NestedTooltip = {
             	return;
             };
 
-            var progressImage;
-            if (isKeyboard) {
-                var stackData = MSU.NestedTooltip.TooltipStack.peek();
-                if (!stackData) return;
-                progressImage = stackData.tooltipContainer.find(".tooltip-progress-bar");
-            } else {
-                progressImage = $(this).data("msu-nested").tooltipContainer.find(".tooltip-progress-bar");
-            }
-
+            var stackData = MSU.NestedTooltip.TooltipStack.peek();
+            if (stackData == null) return;
+            var progressImage = stackData.tooltipContainer.find(".tooltip-progress-bar");
             if (!progressImage) return;
+
             event.stopPropagation();
             progressImage.velocity("finish");
         },
@@ -260,7 +255,6 @@ MSU.NestedTooltip = {
                 .on("mouseenter.msu-tooltip", ".ui-control-tooltip-module", this.onTooltipEnter)
 
                 // Lock handling
-                .on("mousedown.msu-tooltip", ".msu-tooltip-source", this.onLockRequest)
                 .on("keydown.msu-tooltip", this.onLockRequest)
 
                 // Click handling
@@ -363,12 +357,14 @@ MSU.NestedTooltip = {
 		this.unbindFromElement(_element);
 		_element.data('msu-tooltip-parameters', _tooltipParams);
 		_element.addClass('msu-tooltip-source');
+		_element.on("mousedown.msu-tooltip", MSU.NestedTooltip.Events.onLockRequest);
 	},
 	unbindFromElement : function (_element)
 	{
 		_element.removeData("msu-nested");
 		_element.removeData('msu-tooltip-parameters');
 		_element.removeClass('msu-tooltip-source');
+		_element.off("mousedown.msu-tooltip");
 	},
 	onShowTooltipTimerExpired : function(_sourceContainer)
 	{
