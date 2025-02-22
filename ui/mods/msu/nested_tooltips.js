@@ -208,7 +208,7 @@ MSU.NestedTooltip = {
 
             if (!MSU.NestedTooltip.TooltipStack.isEmpty()) {
                 MSU.NestedTooltip.TooltipStack.peek().tooltipContainer
-                    .trigger('mouseenter.msu-tooltip-container');
+                    .trigger('mouseenter.msu-tooltip');
             }
         },
 
