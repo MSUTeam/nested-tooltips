@@ -121,7 +121,6 @@ MSU.NestedTooltip = {
 
 		onNestedSourceEnter : function(event) {
 		    var $element = $(event.currentTarget);
-		    $element.data("isHovered", true);
 		    var data = {
 		        contentType : 'msu-nested-tooltip-source',
 		        elementId : this.dataset.msuNestedId,
@@ -132,7 +131,6 @@ MSU.NestedTooltip = {
 
 		onNestedSourceLeave : function(event) {
 			var $element = $(event.currentTarget);
-			$element.data("isHovered", false);
 		    MSU.NestedTooltip.unbindFromElement($element);
 		},
 
@@ -145,7 +143,6 @@ MSU.NestedTooltip = {
         	MSU.NestedTooltip.Events.cancelTimer("HIDE");
 
             var $element = $(event.currentTarget);
-            $element.data("isHovered", true);
 
             var data = $element.data("msu-nested");
             // Common source handling
@@ -160,23 +157,17 @@ MSU.NestedTooltip = {
         onSourceLeave : function(event) {
         	MSU.NestedTooltip.Events.cancelTimer("SHOW");
         	MSU.NestedTooltip.Events.cancelTimer("HIDE");
-
-        	var $element = $(event.currentTarget);
-            $element.data("isHovered", false);
-
             MSU.NestedTooltip.Events.setTimer("HIDE", MSU.NestedTooltip.updateStack.bind(MSU.NestedTooltip));
         },
 
         onTooltipEnter : function(event)
         {
         	var $element = $(event.currentTarget);
-        	$element.data("isHovered", true)
         	var data = $element.data("msu-nested");
         	if (!data || !data.isLocked) {
         	    $element.hide();
         	    return;
         	}
-        	MSU.NestedTooltip.updateStack();
     		$(".ui-control-tooltip-module").not($element).addClass("msu-nested-tooltip-not-hovered");
     		$element.removeClass("msu-nested-tooltip-not-hovered");
         },
@@ -185,10 +176,6 @@ MSU.NestedTooltip = {
         {
         	MSU.NestedTooltip.Events.cancelTimer("SHOW");
         	MSU.NestedTooltip.Events.cancelTimer("HIDE");
-
-        	var $element = $(event.currentTarget);
-        	$element.data("isHovered", false);
-
         	MSU.NestedTooltip.Events.setTimer("HIDE", MSU.NestedTooltip.updateStack.bind(MSU.NestedTooltip));
         },
 
@@ -230,14 +217,14 @@ MSU.NestedTooltip = {
             this.__lastMouseX = event.clientX;
             this.__lastMouseY = event.clientY;
         },
-        isActuallyHovered: function(element) {
-            var mouseX = MSU.NestedTooltip.Events.__lastMouseX;
-            var mouseY = MSU.NestedTooltip.Events.__lastMouseY;
-            var el = document.elementFromPoint(mouseX, mouseY);
-            if (!el) return false;
-            if (element.is(el) || element.has(el)) return true;
-            return false;
-        },
+
+       	isActuallyHovered: function(element, event) {
+			if (element === undefined || element === null || element.length === 0) return false;
+			var rect = element.get(0).getBoundingClientRect();
+			var mouseX = this.__lastMouseX || 0;
+			var mouseY = this.__lastMouseY || 0;
+			return (mouseX >= rect.left && mouseX <= rect.right && mouseY >= rect.top && mouseY <= rect.bottom);
+		},
 
         initHandlers: function() {
             $(document)
@@ -316,13 +303,13 @@ MSU.NestedTooltip = {
 		for (var i = stack.length - 1; i >= 0; i--)
 		{
 			var nestedData = stack[i];
-			var sourceValid = nestedData.sourceContainer.data("isHovered") &&
+			var sourceValid =
 			                nestedData.sourceContainer.is(":visible") &&
 			                this.Events.isActuallyHovered(nestedData.sourceContainer);
 
-			var tooltipValid = nestedData.tooltipContainer.data("isHovered") &&
+			var tooltipValid =
 			                 nestedData.tooltipContainer.is(":visible") &&
-			                 (nestedData.isLocked || this.Events.isActuallyHovered(nestedData.tooltipContainer));
+			                 (this.Events.isActuallyHovered(nestedData.tooltipContainer));
 
 			if (sourceValid || tooltipValid) {
 			    return;
