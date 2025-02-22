@@ -144,16 +144,12 @@ MSU.NestedTooltip = {
         	MSU.NestedTooltip.Events.cancelTimer("HIDE");
 
             var $element = $(event.currentTarget);
-
             var data = $element.data("msu-nested");
-            // Common source handling
             if (data === undefined) {
                 MSU.NestedTooltip.Events.setTimer("SHOW", function() {
                     MSU.NestedTooltip.onShowTooltipTimerExpired($element);
                 });
             }
-
-            // MSU.NestedTooltip.Events.setTimer("HIDE", MSU.NestedTooltip.updateStack.bind(MSU.NestedTooltip));
         },
         onSourceLeave : function(event) {
         	MSU.NestedTooltip.Events.cancelTimer("SHOW");
@@ -180,17 +176,8 @@ MSU.NestedTooltip = {
         	MSU.NestedTooltip.Events.setTimer("HIDE", MSU.NestedTooltip.updateStack.bind(MSU.NestedTooltip));
         },
 
-        // Combined lock handler for both mouse and keyboard
         onLockRequest : function(event) {
-            var isKeyboard = event.type === 'keydown';
-            // check for item moving due to click
-            var shouldLock = isKeyboard ?
-                MSU.Keybinds.isKeybindPressed(MSU.ID, "LockTooltipKeyboard", event) :
-                MSU.Keybinds.isMousebindPressed(MSU.ID, "LockTooltip");
-
-            if (!shouldLock){
-            	return;
-            };
+            if (!MSU.Keybinds.isKeybindPressed(MSU.ID, "LockTooltipKeyboard", event)) return;
 
             var stackData = MSU.NestedTooltip.TooltipStack.peek();
             if (stackData == null) return;
@@ -201,7 +188,7 @@ MSU.NestedTooltip = {
             progressImage.velocity("finish");
         },
 
-        onTooltipClick : function(event) {
+        onTooltipLeftClick : function(event) {
             if (event.which !== 1) return;
 
             event.stopPropagation();
@@ -210,6 +197,23 @@ MSU.NestedTooltip = {
             if (!MSU.NestedTooltip.TooltipStack.isEmpty()) {
                 MSU.NestedTooltip.TooltipStack.peek().tooltipContainer
                     .trigger('mouseenter.msu-tooltip');
+            }
+        },
+
+        onTooltipRightClick : function(event) {
+        	if (event.which !== 3) return;
+          	MSU.NestedTooltip.TooltipStack.clear();
+            var elementUnderCursor = $(document.elementFromPoint(event.clientX, event.clientY));
+            var $elementUnderCursor = $(elementUnderCursor);
+            var $tooltipSource = $elementUnderCursor.closest(".msu-tooltip-source, .msu-nested-tooltip-source");
+
+            if ($tooltipSource.length) {
+              // Manually trigger mouseenter event
+              var enterEvent = new jQuery.Event("mouseenter");
+              enterEvent.clientX = event.clientX;
+              enterEvent.clientY = event.clientY;
+              enterEvent.currentTarget = elementUnderCursor;
+              $tooltipSource.trigger(enterEvent);
             }
         },
 
@@ -246,7 +250,10 @@ MSU.NestedTooltip = {
                 .on("keydown.msu-tooltip", this.onLockRequest)
 
                 // Click handling
-                .on("mousedown.msu-tooltip", ".ui-control-tooltip-module", this.onTooltipClick);
+                .on("mousedown.msu-tooltip", ".ui-control-tooltip-module", this.onTooltipLeftClick);
+
+            // this one we need to run outside
+            document.addEventListener("mousedown", this.onTooltipRightClick, {"passive": true, "capture" : true});
         }
 	},
 	TileTooltipDiv : {
@@ -345,14 +352,12 @@ MSU.NestedTooltip = {
 		this.unbindFromElement(_element);
 		_element.data('msu-tooltip-parameters', _tooltipParams);
 		_element.addClass('msu-tooltip-source');
-		_element.on("mousedown.msu-tooltip", MSU.NestedTooltip.Events.onLockRequest);
 	},
 	unbindFromElement : function (_element)
 	{
 		_element.removeData("msu-nested");
 		_element.removeData('msu-tooltip-parameters');
 		_element.removeClass('msu-tooltip-source');
-		_element.off("mousedown.msu-tooltip");
 	},
 	onShowTooltipTimerExpired : function(_sourceContainer)
 	{
