@@ -52,6 +52,7 @@ MSU.NestedTooltip = {
 	        while (this.stack.length > 0) {
 	            this.pop();
 	        }
+	        $(".ui-control-tooltip-module").remove(); //full error handling;
 	    },
 
 	    isEmpty: function() {
