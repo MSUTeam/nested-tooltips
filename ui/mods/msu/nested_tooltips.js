@@ -539,12 +539,9 @@ MSU.NestedTooltip = {
 	showTileTooltip: function(_currentData, _cursorPos)
 	{
 		this.updateStack();
-		if (this.TooltipStack.isEmpty() && this.Events.__Timers["SHOW"] == null)
-		{
-			this.TileTooltipDiv.bind(_currentData);
-			this.TileTooltipDiv.cursorPos = _cursorPos;
-			this.TileTooltipDiv.triggerEnter();
-		}
+		this.TileTooltipDiv.bind(_currentData);
+		this.TileTooltipDiv.cursorPos = _cursorPos;
+		this.TileTooltipDiv.triggerEnter();
 	},
 	hideTileTooltip: function()
 	{
