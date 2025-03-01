@@ -7,3 +7,7 @@ local underlineSetting = nestedTooltipsPage.addBooleanSetting("NestedTooltips_Un
 underlineSetting.addAfterChangeCallback(@(_oldValue) ::NestedTooltips.UI.JSConnection.updateNestedTooltipTextStyle());
 local colorSetting = nestedTooltipsPage.addColorPickerSetting("NestedTooltips_Color", "0,35,65,1.0", "Text Color", "The color for nested tooltip hyperlinks text.");
 colorSetting.addAfterChangeCallback(@(_oldValue) ::NestedTooltips.UI.JSConnection.updateNestedTooltipTextStyle());
+
+nestedTooltipsPage.addRangeSetting("showDelay", 150, 0, 1000, 5, "Show Time", "The time in milliseconds until the tooltip appears after hovering an element.");
+nestedTooltipsPage.addRangeSetting("hideDelay", 50, 0, 1000, 5, "Hide Time", "The time in milliseconds until the tooltip disappears after leaving an element.");
+nestedTooltipsPage.addRangeSetting("lockDelay", 500, 0, 10000, 5, "Lock Time", "The time in milliseconds until the tooltip locks and allows you to enter it with your mouse to access nested tooltips.");
