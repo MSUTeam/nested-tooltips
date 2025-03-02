@@ -5,7 +5,9 @@
 		{
 			try
 			{
-				return _skill.getNestedTooltip();
+				local ret = _skill.getNestedTooltip();
+				_skill.getContainer().onQueryTooltip(_skill, ret); // Manually run MSU event
+				return ret;
 			}
 			catch (error)
 			{
