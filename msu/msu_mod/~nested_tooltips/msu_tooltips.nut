@@ -2,8 +2,17 @@
 	CharacterStats = ::MSU.Class.CustomTooltip(@(_data) ::TooltipEvents.general_queryUIElementTooltipData(null, "character-stats." + _data.ExtraData, null)),
 	Perk = ::MSU.Class.CustomTooltip(function(_data) {
 		local filename = _data.ExtraData;
-		if (filename in ::MSU.NestedTooltips.PerkIDByFilename) return ::TooltipEvents.general_queryUIPerkTooltipData(null, ::MSU.NestedTooltips.PerkIDByFilename[_data.ExtraData]);
-		return ::TooltipEvents.general_querySkillNestedTooltipData(null, null, filename);
+		local tooltipData;
+		if (filename in ::MSU.NestedTooltips.PerkIDByFilename) {
+			tooltipData = ::TooltipEvents.general_queryUIPerkTooltipData(null, ::MSU.NestedTooltips.PerkIDByFilename[_data.ExtraData]);
+		}
+		else {
+			tooltipData =  ::TooltipEvents.general_querySkillNestedTooltipData(null, null, filename);
+		}
+		if (tooltipData != null) {
+			tooltipData.insert(0, { contentType = "skill" });
+		}
+		return tooltipData;
 	}),
 	Skill = ::MSU.Class.CustomTooltip(function(_data) {
 		local extraData = split(_data.ExtraData, ",");
@@ -16,7 +25,11 @@
 				_data[pair[0]] <- pair[1] == "null" ? null : pair[1];
 			}
 		}
-		return ::TooltipEvents.general_querySkillNestedTooltipData(_data);
+		local tooltipData = ::TooltipEvents.general_querySkillNestedTooltipData(_data);
+		if (tooltipData != null) {
+			tooltipData.insert(0, { contentType = "skill" });
+		}
+		return tooltipData;
 	}),
 	// Sometimes you need to show the nested tooltip by considering the entity to be null. This is useful for
 	// e.g. showing nested tooltips of StatusEffects inside perk tooltips on the perk tree window when the selected
