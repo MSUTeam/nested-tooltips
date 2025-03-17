@@ -172,8 +172,9 @@
 
 	q.onQueryMSUTooltipData = @() function( _data )
 	{
-		local ret = ::MSU.System.Tooltips.getTooltip(_data.modId, _data.elementId);
-		_data.ExtraData <- ret.Data;
-		return ret.Tooltip.getUIData(_data);
+		local keyData = ::MSU.System.Tooltips.TooltipKeyData(_data.elementId);
+		local tooltip = ::MSU.System.Tooltips.getTooltip(_data.modId, keyData.Identifier);
+		_data.ExtraData <- keyData.ExtraData;
+		return tooltip.getUIData(_data);
 	}
 });
