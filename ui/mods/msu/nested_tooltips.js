@@ -536,15 +536,59 @@ MSU.NestedTooltip = {
 		this.bindToElement(sourceContainer, _newParams || sourceParams);
 		sourceContainer.trigger('mouseenter.msu-tooltip-source');
 	},
+	hasTooltipSourceBeneathCursor: function(_cursorPos)
+	{
+		// check if there is currently a tooltip element that is not the tile div beneath the cursor
+		// if yes, we don't want the tile tooltip stuff to fire
+		var element = document.elementFromPoint(_cursorPos.left, _cursorPos.top);
+		if (!element) return false;
+
+		var elementClass = element.className || "";
+	    if (typeof elementClass === "string" &&
+	        (elementClass === "msu-tile-div" ||
+	         elementClass.indexOf(" msu-tile-div ") >= 0 ||
+	         elementClass.indexOf("msu-tile-div ") === 0 ||
+	         elementClass.indexOf(" msu-tile-div") === (elementClass.length - " msu-tile-div".length))) {
+	        return false;
+	    }
+
+		var currentElement = element;
+
+	    // Traverse up the DOM tree
+	    // No convenient checks in ES3, and using jquery is wasteful
+	    while (currentElement) {
+	        var elementClass = currentElement.className || "";
+
+	        if (typeof elementClass === "string" &&
+	            (elementClass === "msu-tooltip-source" ||
+	             elementClass.indexOf(" msu-tooltip-source ") >= 0 ||
+	             elementClass.indexOf("msu-tooltip-source ") === 0 ||
+	             elementClass.indexOf(" msu-tooltip-source") === (elementClass.length - " msu-tooltip-source".length))) {
+	            return true;
+	        }
+
+	        currentElement = currentElement.parentNode;
+	        if (currentElement && currentElement.nodeType !== 1) {
+	            currentElement = null;
+	        }
+	    }
+	    return false
+	},
 	showTileTooltip: function(_currentData, _cursorPos)
 	{
+		if (this.hasTooltipSourceBeneathCursor(_cursorPos)) {
+    		return;
+		}
 		this.updateStack();
 		this.TileTooltipDiv.bind(_currentData);
 		this.TileTooltipDiv.cursorPos = _cursorPos;
 		this.TileTooltipDiv.triggerEnter();
 	},
-	hideTileTooltip: function()
+	hideTileTooltip: function(_cursorPos)
 	{
+		if (this.hasTooltipSourceBeneathCursor(_cursorPos)) {
+    		return;
+		}
 		this.TileTooltipDiv.triggerLeave();
 		if (!this.TileTooltipDiv.isLocked())
 		{
@@ -556,7 +600,7 @@ MSU.NestedTooltip = {
 	{
 		if (!this.TileTooltipDiv.isLocked())
 		{
-			this.hideTileTooltip();
+			this.hideTileTooltip(_cursorPos);
 			this.showTileTooltip(_currentData, _cursorPos, _event);
 		}
 	}
@@ -658,7 +702,7 @@ TooltipModule.prototype.mouseHoverTile = function(_event)
 
 TooltipModule.prototype.mouseLeaveTile = function()
 {
-	MSU.NestedTooltip.hideTileTooltip();
+	MSU.NestedTooltip.hideTileTooltip({top: this.mLastMouseY, left: this.mLastMouseX});
 };
 
 MSU.TooltipModule_setupTileTooltip = TooltipModule.prototype.setupTileTooltip;
