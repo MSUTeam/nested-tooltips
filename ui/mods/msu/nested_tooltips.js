@@ -242,7 +242,7 @@ MSU.NestedTooltip = {
                 .on("mouseenter.msu-tooltip", ".msu-nested-tooltip-source", this.onNestedSourceEnter)
 
                 // entering tooltip containers
-                .on("mouseleave.msu-tooltip", ".msu-nested-tooltip-sources-within", this.onTooltipLeave)
+                .on("mouseleave.msu-tooltip", ".ui-control-tooltip-module", this.onTooltipLeave)
                 .on("mouseenter.msu-tooltip", ".ui-control-tooltip-module", this.onTooltipEnter)
 
                 // Lock handling
@@ -426,12 +426,12 @@ MSU.NestedTooltip = {
 
 		this.TooltipStack.push(msuNestedData);
 
-		var nestedSourcesWithin = tooltipContainer.find(".msu-nested-tooltip-source");
+		this.startTooltipLocking(tooltipContainer, _sourceContainer);
 
+		var nestedSourcesWithin = tooltipContainer.find(".msu-nested-tooltip-source");
 		if (nestedSourcesWithin.length > 0)
 		{
 			tooltipContainer.addClass("msu-nested-tooltip-sources-within");
-			this.startTooltipLocking(tooltipContainer, _sourceContainer);
 		}
 
 		// Add data that we'll want to pass to any nested tooltips, such as entityId
