@@ -128,11 +128,13 @@ MSU.NestedTooltip = {
 		        modId : this.dataset.msuNestedMod
 		    };
 		    MSU.NestedTooltip.bindToElement($element, data);
+		    MSU.NestedTooltip.Events.onSourceEnter(event);
 		},
 
 		onNestedSourceLeave : function(event) {
 			var $element = $(event.currentTarget);
 		    MSU.NestedTooltip.unbindFromElement($element);
+		    MSU.NestedTooltip.Events.onSourceLeave(event);
 		},
 
         // Combined handler for source initialization
@@ -238,9 +240,6 @@ MSU.NestedTooltip = {
                 // Source initialization and tooltip showing
                 .on("mouseleave.msu-tooltip", ".msu-nested-tooltip-source", this.onNestedSourceLeave)
                 .on("mouseenter.msu-tooltip", ".msu-nested-tooltip-source", this.onNestedSourceEnter)
-
-                .on("mouseleave.msu-tooltip", ".msu-tooltip-source, .msu-nested-tooltip-source", this.onSourceLeave)
-                .on("mouseenter.msu-tooltip", ".msu-tooltip-source, .msu-nested-tooltip-source", this.onSourceEnter)
 
                 // entering tooltip containers
                 .on("mouseleave.msu-tooltip", ".msu-nested-tooltip-sources-within", this.onTooltipLeave)
@@ -349,15 +348,25 @@ MSU.NestedTooltip = {
 
 	bindToElement : function (_element, _tooltipParams)
 	{
+		var self = this;
 		this.unbindFromElement(_element);
 		_element.data('msu-tooltip-parameters', _tooltipParams);
 		_element.addClass('msu-tooltip-source');
+		_element.on("mouseleave.msu-tooltip", function(e) {
+		    self.Events.onSourceLeave(e);
+		});
+		_element.on("mouseenter.msu-tooltip", function(e) {
+		    self.Events.onSourceEnter(e);
+		});
 	},
 	unbindFromElement : function (_element)
 	{
 		_element.removeData("msu-nested");
 		_element.removeData('msu-tooltip-parameters');
 		_element.removeClass('msu-tooltip-source');
+
+		_element.off("mouseleave.msu-tooltip");
+		_element.off("mouseenter.msu-tooltip");
 	},
 	onShowTooltipTimerExpired : function(_sourceContainer)
 	{
