@@ -14,6 +14,8 @@
 {
 	local roster = ::World.createRoster("MSU_Roster");
 	::MSU.DummyPlayer = roster.create("scripts/entity/tactical/player");
+	::MSU.DummyPlayer.m.Talents.resize(::Const.Attributes.COUNT, 0);
+	::MSU.DummyPlayer.fillAttributeLevelUpValues(::Const.XP.MaxLevelWithPerkpoints - 1);
 	::MSU.DummyPlayer.setStartValuesEx([
 		"msu_dummy_player_background"
 	], false); // false to avoid adding traits
