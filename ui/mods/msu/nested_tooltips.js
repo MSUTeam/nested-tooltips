@@ -775,12 +775,17 @@ TooltipModule.prototype.setupUITooltip = function(_targetDIV, _data)
 	if ((offsets.top + containerHeight + offsetY) > wnd.height())
 	{
 		offsets.top = 10;
+
+		// Since the tooltip will now overlap with _targetDIV and cursor, we need to move it to the left or right, depending on where we have the space for it
+		if (targetOffset.left > (wnd.width() / 2))
+		{
+			offsets.left = targetOffset.left - this.mContainer.outerWidth(true);	// We make the right side of the tooltip (this.mContainer) start directly left of the _targetDIV
+		}
+		else
+		{
+			offsets.left = targetOffset.left + _targetDIV.outerWidth(true);	// We make the left side of the tooltip start directly right of the _targetDIV
+		}
 	}
-	// We also move it to the left or right (depending on the half of the screen we're in) to make sure it's not overlapping the cursor
-	if (targetOffset.left > (wnd.width() / 2))
-		offsets.left = targetOffset.left + _targetDIV.outerWidth(true) - this.mContainer.outerWidth(true);
-	else
-		offsets.left = targetOffset.left;
 
 	this.mContainer.css(offsets);
 }
