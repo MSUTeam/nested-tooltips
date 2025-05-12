@@ -2,8 +2,15 @@
 	CharacterStats = ::MSU.Class.CustomTooltip(@(_data) ::TooltipEvents.general_queryUIElementTooltipData(null, "character-stats." + _data.ExtraData, null)),
 	Perk = ::MSU.Class.CustomTooltip(function(_data) {
 		local filename = _data.ExtraData;
-		if (filename in ::MSU.NestedTooltips.PerkIDByFilename) return ::TooltipEvents.general_queryUIPerkTooltipData(null, ::MSU.NestedTooltips.PerkIDByFilename[_data.ExtraData]);
-		return ::TooltipEvents.general_querySkillNestedTooltipData(null, null, filename);
+		if (filename in ::MSU.NestedTooltips.PerkIDByFilename)
+		{
+			return ::TooltipEvents.general_queryUIPerkTooltipData(null, ::MSU.NestedTooltips.PerkIDByFilename[_data.ExtraData]);
+		}
+		else
+		{
+			::logError("Nested Tooltips Framework: perk filename not recognized. Make sure the perk def exists in ::Const.Perks.LookupMap: " + filename);
+			throw ::MSU.Exception.KeyNotFound(filename);
+		}
 	}),
 	Skill = ::MSU.Class.CustomTooltip(function(_data) {
 		local extraData = split(_data.ExtraData, ",");
