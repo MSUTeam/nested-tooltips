@@ -32,6 +32,10 @@
 				_data[pair[0]] <- pair[1] == "null" ? null : pair[1];
 			}
 		}
+		if ("entityId" in _data && typeof _data.entityId == "string")
+		{
+			_data.entityId = _data.entityId.tointeger();
+		}
 		return ::TooltipEvents.general_querySkillNestedTooltipData(_data);
 	}),
 	Item = ::MSU.Class.CustomTooltip(function(_data) {
@@ -47,6 +51,10 @@
 				local pair = split(entry, ":");
 				_data[pair[0]] <- pair[1] == "null" ? null : pair[1];
 			}
+		}
+		if ("entityId" in _data && typeof _data.entityId == "string")
+		{
+			_data.entityId = _data.entityId.tointeger();
 		}
 		return ::TooltipEvents.general_queryItemNestedTooltipData(_data);
 	}),
