@@ -55,7 +55,7 @@ local ImageKeywordMap = {};
 			break;
 
 		default:
-			arr.slice(1).reduce(@(a, b) a + "+" + b);
+			extraData = arr.slice(1).reduce(@(a, b) a + "+" + b);
 			break;
 	}
 
