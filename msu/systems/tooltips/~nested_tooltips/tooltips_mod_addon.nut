@@ -48,7 +48,7 @@ local __regexp = regexp("\\[([^\\[\\]]+)\\|([^\\[\\]]+)\\]"); // \[(.+?)\|([\w\.
 			return ::Const.Perks.findById(::MSU.NestedTooltips.PerkIDByFilename[filename])[_field];
 
 		case "Skill":
-			return ::MSU.NestedTooltips.SkillObjectsByFilename[filename].m[_field];
+			return ::new("scripts/skills/" + filename).m[_field];
 
 		case "Item":
 			return ::MSU.NestedTooltips.ItemObjectsByFilename[filename].m[_field];

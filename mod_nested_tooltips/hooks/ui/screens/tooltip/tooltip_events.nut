@@ -17,15 +17,22 @@
 		}
 
 		local entityId = "entityId" in _data ? _data.entityId : null;
-		// local skillId = "skillId" in _data ? _data.skillId : null;
 		local itemId = "itemId" in _data ? _data.itemId : null;
+		local scriptPath = "scripts/skills/" + _data.filename;
+		local className = split(_data.filename, "/").top();
 
-		local skillId = ::MSU.NestedTooltips.SkillObjectsByFilename[_data.filename].getID();
 		local entity = entityId != null ? ::Tactical.getEntityByID(entityId) : null;
 		local skill;
 		if (entity != null)
 		{
-			skill = entity.getSkills().getSkillByID(skillId);
+			foreach (s in entity.getSkills().m.Skills)
+			{
+				if (s.ClassName == className && !s.isGarbage() && !s.isHidden() && ::IO.scriptFilenameByHash(s.ClassNameHash) == scriptPath)
+				{
+					skill = s;
+					break;
+				}
+			}
 		}
 
 		if (skill != null)
@@ -61,7 +68,7 @@
 
 			foreach (s in item.getSkills())
 			{
-				if (s.getID() == skillId)
+				if (::IO.scriptFilenameByHash(s.ClassNameHash) == scriptPath)
 				{
 					ret = getNestedTooltip_safe(s)
 					break;
@@ -80,7 +87,7 @@
 
 		if (ret == null)
 		{
-			skill = ::MSU.NestedTooltips.SkillObjectsByFilename[_data.filename];
+			skill = ::new(scriptPath);
 			skill.m.Container = ::MSU.getDummyPlayer().getSkills();
 			skill.m.Item = item;
 			ret = getNestedTooltip_safe(skill);
@@ -110,7 +117,15 @@
 		}
 		else
 		{
-			item = ::MSU.NestedTooltips.ItemObjectsByFilename[_data.filename];
+			if (_data.filename in ::MSU.NestedTooltips.ItemObjectsByFilename)
+			{
+				item = ::MSU.NestedTooltips.ItemObjectsByFilename[_data.filename];
+			}
+			else
+			{
+				item = ::new("scripts/items/" + _data.filename);
+				::MSU.NestedTooltips.ItemObjectsByFilename[_data.filename] <- item;
+			}
 			::NestedTooltips.NestedTooltipItems[item.getInstanceID()] <- ::MSU.asWeakTableRef(item);
 		}
 

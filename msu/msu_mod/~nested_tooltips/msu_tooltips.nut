@@ -78,7 +78,7 @@ local tooltipImageKeywords = {
 {
 	foreach (perk in ::Const.Perks.LookupMap)
 	{
-		local filename = split(perk.Script, "/").top();
+		local filename = perk.Script.slice(21); // remove "scripts/skills/perks/"
 		tooltipImageKeywords[perk.Icon] <- "Perk+" + filename;
 		::MSU.NestedTooltips.PerkIDByFilename[filename] <- perk.ID;
 	}
