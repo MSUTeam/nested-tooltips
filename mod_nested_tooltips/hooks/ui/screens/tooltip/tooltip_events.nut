@@ -20,7 +20,7 @@
 		// local skillId = "skillId" in _data ? _data.skillId : null;
 		local itemId = "itemId" in _data ? _data.itemId : null;
 
-		local skillId = ::MSU.NestedTooltips.SkillObjectsByFilename[_data.Filename].getID();
+		local skillId = ::MSU.NestedTooltips.SkillObjectsByFilename[_data.filename].getID();
 		local entity = entityId != null ? ::Tactical.getEntityByID(entityId) : null;
 		local skill;
 		if (entity != null)
@@ -80,7 +80,7 @@
 
 		if (ret == null)
 		{
-			skill = ::MSU.NestedTooltips.SkillObjectsByFilename[_data.Filename];
+			skill = ::MSU.NestedTooltips.SkillObjectsByFilename[_data.filename];
 			skill.m.Container = ::MSU.getDummyPlayer().getSkills();
 			skill.m.Item = item;
 			ret = getNestedTooltip_safe(skill);
@@ -110,7 +110,7 @@
 		}
 		else
 		{
-			item = ::MSU.NestedTooltips.ItemObjectsByFilename[_data.Filename];
+			item = ::MSU.NestedTooltips.ItemObjectsByFilename[_data.filename];
 			::NestedTooltips.NestedTooltipItems[item.getInstanceID()] <- ::MSU.asWeakTableRef(item);
 		}
 

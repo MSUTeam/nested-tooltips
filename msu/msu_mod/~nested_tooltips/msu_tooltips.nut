@@ -1,10 +1,10 @@
 ::MSU.Mod.Tooltips.setTooltips({
 	CharacterStats = ::MSU.Class.CustomTooltip(@(_data) ::TooltipEvents.general_queryUIElementTooltipData(null, "character-stats." + _data.ExtraData, null)),
 	Perk = ::MSU.Class.CustomTooltip(function(_data) {
-		local filename = _data.ExtraData;
+		local filename = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData).filename;
 		if (filename in ::MSU.NestedTooltips.PerkIDByFilename)
 		{
-			return ::TooltipEvents.general_queryUIPerkTooltipData(null, ::MSU.NestedTooltips.PerkIDByFilename[_data.ExtraData]);
+			return ::TooltipEvents.general_queryUIPerkTooltipData(null, ::MSU.NestedTooltips.PerkIDByFilename[filename]);
 		}
 		else
 		{
@@ -13,24 +13,20 @@
 		}
 	}),
 	Skill = ::MSU.Class.CustomTooltip(function(_data) {
-		local extraData = split(_data.ExtraData, ",");
-		_data.Filename <- extraData.remove(0);
 		local original_entityId = "entityId" in _data ? _data.entityId : null;
-		_data.entityId <- null;
-		if (extraData.len() != 0)
+		_data = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData);
+		if ("entityId" in _data)
 		{
-			foreach (entry in extraData)
+			if (_data.entityId == "default")
+				_data.entityId = original_entityId;
+			else if (typeof _data.entityId == "string")
 			{
-				local pair = split(entry, ":");
-				// Allow the default entityId from the tooltip stack to fall through
-				if (pair[0] == "entityId" && pair[1] == "default")
-				{
-					_data.entityId <- original_entityId;
-					continue;
-				}
-
-				_data[pair[0]] <- pair[1] == "null" ? null : pair[1];
+				_data.entityId = _data.entityId.tointeger();
 			}
+		}
+		else
+		{
+			_data.entityId <- null;
 		}
 		if ("entityId" in _data && typeof _data.entityId == "string")
 		{
@@ -39,20 +35,19 @@
 		return ::TooltipEvents.general_querySkillNestedTooltipData(_data);
 	}),
 	Item = ::MSU.Class.CustomTooltip(function(_data) {
-		local extraData = split(_data.ExtraData, ",");
-		_data.Filename <- extraData.remove(0);
-		// We want itemId to be passed via ExtraData only because a nested item hyperlink shouldn't be
-		// considered as the tooltip  of an item that is present on an entity unless specified
-		_data.itemId <- null;
-		if (extraData.len() != 0)
+		// itemId must be passed in ExtraData if it is desired to be used
+		// i.e. we don't take it from the tooltip stack
+		// Similarly any other info from the tooltip stack e.g. entityId is ignored
+		// for the purposes of item nested tooltips because we wanted the nested tooltip of the item
+		// that has been added with itemId into the NestedTooltipItems table
+		local original_entityId = "entityId" in _data ? _data.entityId : null;
+		_data = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData);
+		// entityId is required for proper handling of finding item from itemOwner
+		if (!("entityId" in _data) || _data.entityId == "default")
 		{
-			foreach (entry in extraData)
-			{
-				local pair = split(entry, ":");
-				_data[pair[0]] <- pair[1] == "null" ? null : pair[1];
-			}
+			_data.entityId <- original_entityId;
 		}
-		if ("entityId" in _data && typeof _data.entityId == "string")
+		else if (typeof _data.entityId == "string")
 		{
 			_data.entityId = _data.entityId.tointeger();
 		}

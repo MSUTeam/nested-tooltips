@@ -41,7 +41,7 @@ local __regexp = regexp("\\[([^\\[\\]]+)\\|([^\\[\\]]+)\\]"); // \[(.+?)\|([\w\.
 
 ::MSU.Class.TooltipsModAddon.generateNestedTextFromObj <- function( _field, _key, _extraData )
 {
-	local filename = split(_extraData, ",")[0];
+	local filename = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_extraData).filename;
 	switch (_key)
 	{
 		case "Perk":
