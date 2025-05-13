@@ -15,24 +15,24 @@
 	Skill = ::MSU.Class.CustomTooltip(function(_data) {
 		local extraData = split(_data.ExtraData, ",");
 		_data.Filename <- extraData.remove(0);
+		local original_entityId = "entityId" in _data ? _data.entityId : null;
+		_data.entityId <- null;
 		if (extraData.len() != 0)
 		{
 			foreach (entry in extraData)
 			{
 				local pair = split(entry, ":");
+				// Allow the default entityId from the tooltip stack to fall through
+				if (pair[0] == "entityId" && pair[1] == "default")
+				{
+					_data.entityId <- original_entityId;
+					continue;
+				}
+
 				_data[pair[0]] <- pair[1] == "null" ? null : pair[1];
 			}
 		}
 		return ::TooltipEvents.general_querySkillNestedTooltipData(_data);
-	}),
-	// Sometimes you need to show the nested tooltip by considering the entity to be null. This is useful for
-	// e.g. showing nested tooltips of StatusEffects inside perk tooltips on the perk tree window when the selected
-	// character has the StatusEffect. Using the standard Skill+filename will show the tooltip of the effect based on that character
-	// whereas we want to show a generic tooltip independent of the entity.
-	NullEntitySkill = ::MSU.Class.CustomTooltip(function(_data) {
-		_data.entityId <- ::MSU.getDummyPlayer().getID();
-		_data.itemOwner <- null;
-		return ::MSU.System.Tooltips.getTooltip(_data.modId, "Skill").Tooltip.getUIData(_data);
 	}),
 	Item = ::MSU.Class.CustomTooltip(function(_data) {
 		local extraData = split(_data.ExtraData, ",");
