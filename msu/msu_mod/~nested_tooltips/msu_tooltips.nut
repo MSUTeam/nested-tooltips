@@ -37,10 +37,8 @@
 	Item = ::MSU.Class.CustomTooltip(function(_data) {
 		local extraData = split(_data.ExtraData, ",");
 		_data.Filename <- extraData.remove(0);
-		// We want itemId and _itemOwner to be passed via ExtraData only
-		// because a nested item hyperlink shouldn't be considered as the tooltip
-		// of an item that is present on an entity unless specified
-		_data.itemOwner <- null;
+		// We want itemId to be passed via ExtraData only because a nested item hyperlink shouldn't be
+		// considered as the tooltip  of an item that is present on an entity unless specified
 		_data.itemId <- null;
 		if (extraData.len() != 0)
 		{

@@ -19,7 +19,6 @@
 		local entityId = "entityId" in _data ? _data.entityId : null;
 		// local skillId = "skillId" in _data ? _data.skillId : null;
 		local itemId = "itemId" in _data ? _data.itemId : null;
-		local itemOwner = "itemOwner" in _data ? _data.itemOwner : null;
 
 		local skillId = ::MSU.NestedTooltips.SkillObjectsByFilename[_data.Filename].getID();
 		local entity = entityId != null ? ::Tactical.getEntityByID(entityId) : null;
@@ -37,7 +36,15 @@
 		local item;
 		if (itemId != null)
 		{
-			item = this.getItemByItemOwner(entityId, itemId, itemOwner);
+			local itemOwner = "itemOwner" in _data ? _data.itemOwner : null;
+			if (itemOwner == null)
+			{
+				item = ::NestedTooltips.NestedTooltipItems[itemId];
+			}
+			else
+			{
+				item = this.getItemByItemOwner(entityId, itemId, itemOwner);
+			}
 		}
 
 		if (!::MSU.isNull(item))
@@ -75,8 +82,10 @@
 		{
 			skill = ::MSU.NestedTooltips.SkillObjectsByFilename[_data.Filename];
 			skill.m.Container = ::MSU.getDummyPlayer().getSkills();
+			skill.m.Item = item;
 			ret = getNestedTooltip_safe(skill);
 			skill.m.Container = null;
+			skill.m.Item = null;
 		}
 
 		return ret;
@@ -89,16 +98,30 @@
 		local itemId = "itemId" in _data ? _data.itemId : null;
 		if (itemId != null)
 		{
-			local entityId = "entityId" in _data ? _data.entityId : null;
 			local itemOwner = "itemOwner" in _data ? _data.itemOwner : null;
-			item = this.getItemByItemOwner(entityId, itemId, itemOwner);
+			if (itemOwner == null)
+			{
+				item = ::NestedTooltips.NestedTooltipItems[itemId];
+			}
+			else
+			{
+				item = this.getItemByItemOwner("entityId" in _data ? _data.entityId : null, itemId, itemOwner);
+			}
 		}
 		else
 		{
 			item = ::MSU.NestedTooltips.ItemObjectsByFilename[_data.Filename];
+			::NestedTooltips.NestedTooltipItems[item.getInstanceID()] <- ::MSU.asWeakTableRef(item);
 		}
 
 		return item.getNestedTooltip();
+	}
+
+	q.onQueryMSUTooltipData = @() function( _data )
+	{
+		local ret = ::MSU.System.Tooltips.getTooltip(_data.modId, _data.elementId);
+		_data.ExtraData <- ret.Data;
+		return ret.Tooltip.getUIData(_data);
 	}
 
 	q.getItemByItemOwner <- function( _entityId, _itemId, _itemOwner )
@@ -155,25 +178,6 @@
 				break;
 		}
 
-		if (item == null && _itemId != null)
-		{
-			foreach (itemObj in ::MSU.NestedTooltips.ItemObjectsByFilename)
-			{
-				if (itemObj.getInstanceID() == _itemId)
-				{
-					item = itemObj;
-					break;
-				}
-			}
-		}
-
 		return item;
-	}
-
-	q.onQueryMSUTooltipData = @() function( _data )
-	{
-		local ret = ::MSU.System.Tooltips.getTooltip(_data.modId, _data.elementId);
-		_data.ExtraData <- ret.Data;
-		return ret.Tooltip.getUIData(_data);
 	}
 });
