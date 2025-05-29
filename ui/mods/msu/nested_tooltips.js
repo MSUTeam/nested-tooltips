@@ -543,7 +543,7 @@ MSU.NestedTooltip = {
 		this.TooltipStack.clear();
 		this.unbindFromElement(sourceContainer);
 		this.bindToElement(sourceContainer, _newParams || sourceParams);
-		sourceContainer.trigger('mouseenter.msu-tooltip-source');
+		sourceContainer.trigger('mouseenter');
 	},
 	hasTooltipSourceBeneathCursor: function(_cursorPos)
 	{
