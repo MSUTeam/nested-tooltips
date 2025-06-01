@@ -790,6 +790,15 @@ TooltipModule.prototype.setupUITooltip = function(_targetDIV, _data)
 			offsets.left = elementOffset.left + elementWidth;	// We make the left side of the tooltip start directly right of the _targetDIV
 		}
 	}
+	else
+	{
+		// If the tooltip overlaps with the left of the game window, we change it to instead starts at the left
+		if (offsets.left < 0)
+			offsets.left = 10;
+		// If the tooltip overlaps with the right of the game window, we change it to instead end at the right side
+		else if (offsets.left + containerWidth > wnd.width())
+			offsets.left = wnd.width() - containerWidth - 10;
+	}
 
 	this.mContainer.css(offsets);
 }
