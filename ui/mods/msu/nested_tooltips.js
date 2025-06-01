@@ -764,7 +764,7 @@ TooltipModule.prototype.setupUITooltip = function(_targetDIV, _data)
 
 	var offsets = {		// By default we want the tooltips to show
 		top  : elementOffset.top - containerHeight - offsetY,	// on top of the UI-Element
-		left : elementOffset.left
+		left : elementOffset.left + (elementWidth / 2) - (containerWidth / 2)	// horizontally exactly in the middle of the element
 	}
 
 	// If that would overflow the top of the screen, we instead display them below our cursor
