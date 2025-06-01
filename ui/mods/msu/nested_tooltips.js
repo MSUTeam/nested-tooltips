@@ -740,8 +740,9 @@ TooltipModule.prototype.setupUITooltip = function(_targetDIV, _data)
 {
 	MSU.TooltipModule_setupUITooltip.call(this, _targetDIV, _data);
 
-	// We do the mostly the same calculations as vanilla at first for getting the top position of our tooltip
+	// Start --- Exact copy of vanilla calculation, as our later following logic requires those values
 	if(_targetDIV === undefined) return;
+
 	var offsetY = ('yOffset' in _data) ? _data.yOffset : this.mDefaultYOffset;
 	if (offsetY !== null)
 	{
@@ -755,35 +756,38 @@ TooltipModule.prototype.setupUITooltip = function(_targetDIV, _data)
 		}
 	}
 
-	var targetOffset	= _targetDIV.offset();
+	var elementOffset	= _targetDIV.offset();
+	var elementWidth	= _targetDIV.outerWidth(true);
 	var elementHeight	= _targetDIV.outerHeight(true);
-	var containerHeight = this.mContainer.outerHeight(true);
-	// By default we want the tooltips shown on top of the UI-Element
-	var offsets = {
-		top  : targetOffset.top - containerHeight - offsetY,
-		left : targetOffset.left
+	var containerWidth	= this.mContainer.outerWidth(true);		// Width of the tooltip we want to display
+	var containerHeight = this.mContainer.outerHeight(true);	// Height of the tooltip we want to display
+
+	var offsets = {		// By default we want the tooltips to show
+		top  : elementOffset.top - containerHeight - offsetY,	// on top of the UI-Element
+		left : elementOffset.left
 	}
 
 	// If that would overflow the top of the screen, we instead display them below our cursor
 	if (offsets.top < 0)
 	{
-		offsets.top = targetOffset.top + elementHeight + offsetY;
+		offsets.top = elementOffset.top + elementHeight + offsetY;
 	}
+	// End --- Exact copy of vanilla calculation. Now our custom logic starts
 
-	// If that would overflow the bottom of the screen, we instead display it starting directly at the top of the screen
+	// Feat: When a tooltip has neither enough space above, nor below the cursor, we display it starting at the top of the game window, either left or right of the cursor
 	var wnd = this.mParent; // $(window);
 	if ((offsets.top + containerHeight + offsetY) > wnd.height())
 	{
-		offsets.top = 10;
+		offsets.top = 10;	// we display it starting at the top of the game window
 
 		// Since the tooltip will now overlap with _targetDIV and cursor, we need to move it to the left or right, depending on where we have the space for it
-		if (targetOffset.left > (wnd.width() / 2))
+		if (elementOffset.left > (wnd.width() / 2))
 		{
-			offsets.left = targetOffset.left - this.mContainer.outerWidth(true);	// We make the right side of the tooltip (this.mContainer) start directly left of the _targetDIV
+			offsets.left = elementOffset.left - containerWidth;	// We make the right side of the tooltip (this.mContainer) start directly left of the _targetDIV
 		}
 		else
 		{
-			offsets.left = targetOffset.left + _targetDIV.outerWidth(true);	// We make the left side of the tooltip start directly right of the _targetDIV
+			offsets.left = elementOffset.left + elementWidth;	// We make the left side of the tooltip start directly right of the _targetDIV
 		}
 	}
 
