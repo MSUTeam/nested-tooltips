@@ -540,10 +540,11 @@ MSU.NestedTooltip = {
 		var sourceParams = nestedData.tooltipParams;
 		if (_element !== undefined && !_element.is(sourceContainer))
 			return;
+		// Remove all tooltips, then re-bind the element with new data and trigger instantly
 		this.TooltipStack.clear();
 		this.unbindFromElement(sourceContainer);
 		this.bindToElement(sourceContainer, _newParams || sourceParams);
-		sourceContainer.trigger('mouseenter');
+		MSU.NestedTooltip.onShowTooltipTimerExpired(sourceContainer);
 	},
 	hasTooltipSourceBeneathCursor: function(_cursorPos)
 	{
