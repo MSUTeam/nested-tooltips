@@ -16,6 +16,26 @@ this.nested_tooltips_js_connection <- ::inherit("scripts/mods/msu/js_connection"
 		if (::getModSetting("mod_msu", "NestedTooltips_Bold").getValue()) styleString += "font-weight: bold;";
 		if (::getModSetting("mod_msu", "NestedTooltips_Italic").getValue()) styleString += "font-style: italic;";
 		if (::getModSetting("mod_msu", "NestedTooltips_Underline").getValue()) styleString += "text-decoration: underline;";
+
+		// replace tip of the day to show new style
+		local oldTipOfTheDay = ::MSU.NestedTooltips.TipOfTheDay;
+		::MSU.NestedTooltips.TipOfTheDay = format(::MSU.NestedTooltips.TipOfTheDayTemplate, styleString);
+		local hadTip = false;
+		for (local i = ::Const.TipOfTheDay.len() - 1; i >= 0; i--)
+		{
+			if (::Const.TipOfTheDay[i] == oldTipOfTheDay)
+			{
+				::Const.TipOfTheDay[i] = ::MSU.NestedTooltips.TipOfTheDay;
+				hadTip = true;
+				break;
+			}
+		}
+		// On game start/restart, add it to the array first
+		if (!hadTip)
+		{
+			::Const.TipOfTheDay.push(::MSU.NestedTooltips.TipOfTheDay);
+		}
+
 		this.m.JSHandle.asyncCall("updateNestedTooltipTextStyle", styleString);
 	}
 
