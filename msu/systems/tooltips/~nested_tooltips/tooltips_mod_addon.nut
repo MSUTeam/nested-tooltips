@@ -23,9 +23,11 @@ local __regexp = regexp("\\[([^\\[\\]]+)\\|([^\\[\\]]+)\\]"); // \[(.+?)\|([\w\.
 		}
 		local tooltipID = _string.slice(match[2].begin, match[2].end);
 		local modID = !::MSU.System.Tooltips.hasKey(myModID, tooltipID) && ::MSU.System.Tooltips.hasKey(::MSU.ID, tooltipID) ? ::MSU.ID : myModID;
-		if (modID == ::MSU.ID && text.len() > 3 && text.slice(0, 4) == "Obj/")
+		// Squirrel regex cannot match empty strings, so we require a blank 1 length string
+		// instead of empty string as the default for "Obj/Name"
+		if (modID == ::MSU.ID && (text == " " || text.len() > 3 && text.slice(0, 4) == "Obj/"))
 		{
-			text = this.generateNestedTextFromObj(text.slice(4), split(_prefix + tooltipID, "+")[0], ::MSU.System.Tooltips.getTooltip(modID, _prefix + tooltipID).Data);
+			text = this.generateNestedTextFromObj(text == " " ? "Name" : text.slice(4), split(_prefix + tooltipID, "+")[0], ::MSU.System.Tooltips.getTooltip(modID, _prefix + tooltipID).Data);
 		}
 		ret += format("[%s=%s.%s]%s[/%s]", tag, modID, _prefix + tooltipID, text, tag);
 		lastPos = match[0].end;
