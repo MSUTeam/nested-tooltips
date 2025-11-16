@@ -23,6 +23,10 @@ local __regexp = regexp("\\[([^\\[\\]]+)\\|([^\\[\\]]+)\\]"); // \[(.+?)\|([\w\.
 		}
 		local tooltipID = _string.slice(match[2].begin, match[2].end);
 		local modID = !::MSU.System.Tooltips.hasKey(myModID, tooltipID) && ::MSU.System.Tooltips.hasKey(::MSU.ID, tooltipID) ? ::MSU.ID : myModID;
+		if (modID == ::MSU.ID && text.len() > 3 && text.slice(0, 4) == "Obj/")
+		{
+			text = this.generateNestedTextFromObj(text.slice(4), split(_prefix + tooltipID, "+")[0], ::MSU.System.Tooltips.getTooltip(modID, _prefix + tooltipID).Data);
+		}
 		ret += format("[%s=%s.%s]%s[/%s]", tag, modID, _prefix + tooltipID, text, tag);
 		lastPos = match[0].end;
 	}
@@ -35,3 +39,18 @@ local __regexp = regexp("\\[([^\\[\\]]+)\\|([^\\[\\]]+)\\]"); // \[(.+?)\|([\w\.
 	return ::MSU.System.Tooltips.setTooltipImageKeywords(this.Mod.getID(), _table);
 }
 
+::MSU.Class.TooltipsModAddon.generateNestedTextFromObj <- function( _field, _key, _extraData )
+{
+	local filename = split(_extraData, ",")[0];
+	switch (_key)
+	{
+		case "Perk":
+			return ::Const.Perks.findById(::MSU.NestedTooltips.PerkIDByFilename[filename])[_field];
+
+		case "Skill":
+			return ::MSU.NestedTooltips.SkillObjectsByFilename[filename].m[_field];
+
+		case "Item":
+			return ::MSU.NestedTooltips.ItemObjectsByFilename[filename].m[_field];
+	}
+}
