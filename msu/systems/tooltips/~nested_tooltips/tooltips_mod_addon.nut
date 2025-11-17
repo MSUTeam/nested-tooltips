@@ -96,7 +96,17 @@ local __dynamicFieldRegexp = regexp("\\$([^\\$]+)\\$");
 			break;
 
 		case "Item":
-			ret = ::MSU.NestedTooltips.ItemObjectsByFilename[filename].m[_field];
+			local item;
+			if (filename in ::MSU.NestedTooltips.ItemObjectsByFilename)
+			{
+				item = ::MSU.NestedTooltips.ItemObjectsByFilename[filename];
+			}
+			else
+			{
+				item = ::new("scripts/items/" + filename);
+				::MSU.NestedTooltips.ItemObjectsByFilename[filename] <- item;
+			}
+			ret = item.m[_field];
 			break;
 	}
 
