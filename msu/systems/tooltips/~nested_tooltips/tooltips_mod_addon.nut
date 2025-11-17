@@ -1,5 +1,9 @@
 local __regexp = regexp("\\[([^\\[\\]]+)\\|([^\\[\\]]+)\\]"); // \[(.+?)\|([\w\.]+)\] \[([^|]+)\|([\w\.]+)\]
 
+// Squirrel regex cannot match empty strings, so we require a blank 1 length string
+// instead of empty string as the default alias for "$Name$"
+local __dynamicFieldRegexp = regexp("\\$([^\\$]+)\\$");
+
 // the __regexp should be a static member of the TooltipsModAddon class when merging into MSU
 ::MSU.Class.TooltipsModAddon.parseString <- function( _string, _prefix = "" )
 {
@@ -11,7 +15,25 @@ local __regexp = regexp("\\[([^\\[\\]]+)\\|([^\\[\\]]+)\\]"); // \[(.+?)\|([\w\.
 	while (match = __regexp.capture(_string, lastPos))
 	{
 		ret += _string.slice(lastPos, match[0].begin);
+
 		local text = _string.slice(match[1].begin, match[1].end);
+		local tooltipID = _string.slice(match[2].begin, match[2].end);
+		local modID = !::MSU.System.Tooltips.hasKey(myModID, tooltipID) && ::MSU.System.Tooltips.hasKey(::MSU.ID, tooltipID) ? ::MSU.ID : myModID;
+		if (modID == ::MSU.ID)
+		{
+			local key = split(_prefix + tooltipID, "+")[0];
+			local extraData = ::MSU.System.Tooltips.getTooltip(modID, _prefix + tooltipID).Data;
+
+			local fieldLastPos = 0;
+			local fieldMatch;
+			while (fieldMatch = __dynamicFieldRegexp.capture(text, fieldLastPos))
+			{
+				local field = this.generateNestedTextFromObj(text.slice(fieldMatch[1].begin, fieldMatch[1].end), key, extraData);
+				text = text.slice(0, fieldMatch[0].begin) + field + text.slice(fieldMatch[0].end);
+				fieldLastPos = fieldMatch[0].end;
+			}
+		}
+
 		if (text.find("Img/") != null)
 		{
 			text = text.slice(4);
@@ -21,14 +43,7 @@ local __regexp = regexp("\\[([^\\[\\]]+)\\|([^\\[\\]]+)\\]"); // \[(.+?)\|([\w\.
 		{
 			tag = "tooltip";
 		}
-		local tooltipID = _string.slice(match[2].begin, match[2].end);
-		local modID = !::MSU.System.Tooltips.hasKey(myModID, tooltipID) && ::MSU.System.Tooltips.hasKey(::MSU.ID, tooltipID) ? ::MSU.ID : myModID;
-		// Squirrel regex cannot match empty strings, so we require a blank 1 length string
-		// instead of empty string as the default for "Obj/Name"
-		if (modID == ::MSU.ID && (text == " " || text.len() > 3 && text.slice(0, 4) == "Obj/"))
-		{
-			text = this.generateNestedTextFromObj(text == " " ? "Name" : text.slice(4), split(_prefix + tooltipID, "+")[0], ::MSU.System.Tooltips.getTooltip(modID, _prefix + tooltipID).Data);
-		}
+
 		ret += format("[%s=%s.%s]%s[/%s]", tag, modID, _prefix + tooltipID, text, tag);
 		lastPos = match[0].end;
 	}
@@ -52,11 +67,19 @@ local __regexp = regexp("\\[([^\\[\\]]+)\\|([^\\[\\]]+)\\]"); // \[(.+?)\|([\w\.
 	}
 
 	local isLower = false;
-	local idx = _field.find(".tolower()");
-	if (idx != null)
+
+	if (_field == " ")
 	{
-		_field = _field.slice(0, idx);
-		isLower = true;
+		_field = "Name";
+	}
+	else
+	{
+		local idx = _field.find(".tolower()");
+		if (idx != null)
+		{
+			_field = _field.slice(0, idx);
+			isLower = true;
+		}
 	}
 
 	local ret = "";
