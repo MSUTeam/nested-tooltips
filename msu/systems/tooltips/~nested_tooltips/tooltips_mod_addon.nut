@@ -51,16 +51,31 @@ local __regexp = regexp("\\[([^\\[\\]]+)\\|([^\\[\\]]+)\\]"); // \[(.+?)\|([\w\.
 		throw "trying to parseString with Object fields too early"
 	}
 
+	local isLower = false;
+	local idx = _field.find(".tolower()");
+	if (idx != null)
+	{
+		_field = _field.slice(0, idx);
+		isLower = true;
+	}
+
+	local ret = "";
+
 	local filename = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_extraData).filename;
 	switch (_key)
 	{
 		case "Perk":
-			return ::Const.Perks.findById(::MSU.NestedTooltips.PerkIDByFilename[filename])[_field];
+			ret = ::Const.Perks.findById(::MSU.NestedTooltips.PerkIDByFilename[filename])[_field];
+			break;
 
 		case "Skill":
-			return ::new("scripts/skills/" + filename).m[_field];
+			ret = ::new("scripts/skills/" + filename).m[_field];
+			break;
 
 		case "Item":
-			return ::MSU.NestedTooltips.ItemObjectsByFilename[filename].m[_field];
+			ret = ::MSU.NestedTooltips.ItemObjectsByFilename[filename].m[_field];
+			break;
 	}
+
+	return isLower ? ret.tolower() : ret;
 }
