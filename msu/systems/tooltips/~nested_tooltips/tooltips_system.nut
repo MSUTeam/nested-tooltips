@@ -42,9 +42,25 @@ local ImageKeywordMap = {};
 // overwrite existing function
 ::MSU.Class.TooltipsSystem.getTooltip <- function( _modID, _identifier )
 {
+	local info = this.getFullKeyAndExtraData(_identifier);
+
+	local currentTable = this.Mods[_modID];
+	for (local i = 0; i < info.FullKey.len(); ++i)
+	{
+		local currentKey = info.FullKey[i];
+		currentTable = currentTable[currentKey];
+	}
+
+	return {
+		Tooltip = currentTable,
+		Data = info.ExtraData
+	};
+}
+
+::MSU.Class.TooltipsSystem.getFullKeyAndExtraData <- function( _identifier )
+{
 	local arr = split(_identifier, "+");
-	local fullKey = split(arr[0], ".");
-	local extraData;
+	local extraData = "";
 	switch (arr.len())
 	{
 		case 1:
@@ -52,22 +68,14 @@ local ImageKeywordMap = {};
 
 		case 2:
 			extraData = arr[1];
-			break;
 
 		default:
 			extraData = arr.slice(1).reduce(@(a, b) a + "+" + b);
-			break;
 	}
 
-	local currentTable = this.Mods[_modID];
-	for (local i = 0; i < fullKey.len(); ++i)
-	{
-		local currentKey = fullKey[i];
-		currentTable = currentTable[currentKey];
-	}
 	return {
-		Tooltip = currentTable,
-		Data = extraData
+		FullKey = split(arr[0], "."),
+		ExtraData = extraData
 	};
 }
 

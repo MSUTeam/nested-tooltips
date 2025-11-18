@@ -19,10 +19,11 @@ local __dynamicFieldRegexp = regexp("\\$([^\\$]+)\\$");
 		local text = _string.slice(match[1].begin, match[1].end);
 		local tooltipID = _string.slice(match[2].begin, match[2].end);
 		local modID = !::MSU.System.Tooltips.hasKey(myModID, tooltipID) && ::MSU.System.Tooltips.hasKey(::MSU.ID, tooltipID) ? ::MSU.ID : myModID;
-		if (modID == ::MSU.ID)
+
+		if (text.find("$") != null)
 		{
 			local key = split(_prefix + tooltipID, "+")[0];
-			local extraData = ::MSU.System.Tooltips.getTooltip(modID, _prefix + tooltipID).Data;
+			local extraData = ::MSU.System.Tooltips.getFullKeyAndExtraData(_prefix + tooltipID).ExtraData
 
 			local fieldLastPos = 0;
 			local fieldMatch;
@@ -56,6 +57,11 @@ local __dynamicFieldRegexp = regexp("\\$([^\\$]+)\\$");
 	return ::MSU.System.Tooltips.setTooltipImageKeywords(this.Mod.getID(), _table);
 }
 
+// This allows mods to add custom dynamic handling for their own tooltip IDs.
+// This must be a function that returns a string and
+// matches the parameter signature of TooltipsModAddon.generateNestedTextFromObj
+::MSU.Class.TooltipsModAddon.generateNestedTextFromObjCallback <- null;
+
 ::MSU.Class.TooltipsModAddon.generateNestedTextFromObj <- function( _field, _key, _extraData )
 {
 	// MSU.__canCreateDummyPlayer is flipped by us during the FirstWorldInit bucket
@@ -79,21 +85,32 @@ local __dynamicFieldRegexp = regexp("\\$([^\\$]+)\\$");
 		_field = funcs.pop();
 	}
 
-	local filename = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_extraData).filename;
 	local ret;
-	switch (_key)
+	if (this.generateNestedTextFromObjCallback != null)
 	{
-		case "Perk":
-			ret = ::Const.Perks.findById(::MSU.NestedTooltips.PerkIDByFilename[filename])[_field];
-			break;
+		if (::MSU.System.Tooltips.hasKey(this.getMod().getID(), _key))
+		{
+			ret = this.generateNestedTextFromObjCallback(_field, _key, _extraData);
+		}
+	}
 
-		case "Skill":
-			ret = ::MSU.System.Tooltips.getObjFromFilename(filename, ::MSU.NestedTooltips.SkillObjectsByFilename).m[_field];
-			break;
+	if (ret == null)
+	{
+		local filename = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_extraData).filename;
+		switch (_key)
+		{
+			case "Perk":
+				ret = ::Const.Perks.findById(::MSU.NestedTooltips.PerkIDByFilename[filename])[_field];
+				break;
 
-		case "Item":
-			ret = ::MSU.System.Tooltips.getObjFromFilename(filename, ::MSU.NestedTooltips.ItemObjectsByFilename).m[_field];
-			break;
+			case "Skill":
+				ret = ::MSU.System.Tooltips.getObjFromFilename(filename, ::MSU.NestedTooltips.SkillObjectsByFilename).m[_field];
+				break;
+
+			case "Item":
+				ret = ::MSU.System.Tooltips.getObjFromFilename(filename, ::MSU.NestedTooltips.ItemObjectsByFilename).m[_field];
+				break;
+		}
 	}
 
 	if (funcs != null)
