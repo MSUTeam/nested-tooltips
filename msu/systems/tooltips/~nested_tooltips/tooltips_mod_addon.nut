@@ -66,7 +66,7 @@ local __dynamicFieldRegexp = regexp("\\$([^\\$]+)\\$");
 		throw "trying to parseString with Object fields too early"
 	}
 
-	local isLower = false;
+	local funcs = null;
 
 	if (_field == " ")
 	{
@@ -74,30 +74,35 @@ local __dynamicFieldRegexp = regexp("\\$([^\\$]+)\\$");
 	}
 	else
 	{
-		local idx = _field.find(".tolower()");
-		if (idx != null)
-		{
-			_field = _field.slice(0, idx);
-			isLower = true;
-		}
+		funcs = split(_field, ".");
+		funcs.reverse();
+		_field = funcs.pop();
 	}
 
 	local filename = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_extraData).filename;
-	local obj;
+	local ret;
 	switch (_key)
 	{
 		case "Perk":
-			obj = ::Const.Perks.findById(::MSU.NestedTooltips.PerkIDByFilename[filename]);
+			ret = ::Const.Perks.findById(::MSU.NestedTooltips.PerkIDByFilename[filename])[_field];
 			break;
 
 		case "Skill":
-			obj = ::MSU.System.Tooltips.getObjFromFilename(filename, ::MSU.NestedTooltips.SkillObjectsByFilename).m;
+			ret = ::MSU.System.Tooltips.getObjFromFilename(filename, ::MSU.NestedTooltips.SkillObjectsByFilename).m[_field];
 			break;
 
 		case "Item":
-			obj = ::MSU.System.Tooltips.getObjFromFilename(filename, ::MSU.NestedTooltips.ItemObjectsByFilename).m;
+			ret = ::MSU.System.Tooltips.getObjFromFilename(filename, ::MSU.NestedTooltips.ItemObjectsByFilename).m[_field];
 			break;
 	}
 
-	return isLower ? obj[_field].tolower() : obj[_field];
+	if (funcs != null)
+	{
+		while (funcs.len() != 0)
+		{
+			ret = compilestring(format("return @(_s) _s.%s", funcs.pop()))()(ret);
+		}
+	}
+
+	return ret;
 }
