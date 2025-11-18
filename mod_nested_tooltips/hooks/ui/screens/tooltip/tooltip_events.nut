@@ -1,21 +1,6 @@
 ::NestedTooltips.MH.hook("scripts/ui/screens/tooltip/tooltip_events", function(q) {
 	q.general_querySkillNestedTooltipData <- function( _data )
 	{
-		local function getNestedTooltip_safe( _skill )
-		{
-			try
-			{
-				local ret = _skill.getNestedTooltip();
-				_skill.getContainer().onQueryTooltip(_skill, ret); // Manually run MSU event
-				return ret;
-			}
-			catch (error)
-			{
-				::NestedTooltips.Mod.Debug.printWarning(format("Could not fetch nested tooltip for skill %s, so returning base skill tooltip. Error: %s", _skill.getID(), error));
-				return _skill.isActive() ? _skill.skill.getDefaultUtilityTooltip() : _skill.skill.getTooltip();
-			}
-		}
-
 		local entityId = "entityId" in _data ? _data.entityId : null;
 		local itemId = "itemId" in _data ? _data.itemId : null;
 		local itemOwner = "itemOwner" in _data ? _data.itemOwner : null;
@@ -46,7 +31,7 @@
 			{
 				if (s.getID() == skillId)
 				{
-					ret = getNestedTooltip_safe(s)
+					ret = s.__MSU_getNestedTooltipSafe();
 					break;
 				}
 			}
@@ -69,12 +54,12 @@
 				local skill = entity.getSkills().getSkillByID(skillId);
 				if (skill != null)
 				{
-					return getNestedTooltip_safe(skill);
+					return skill.__MSU_getNestedTooltipSafe();
 				}
 			}
 
 			cachedSkillObj.m.Container = ::MSU.getDummyPlayer().getSkills();
-			ret = getNestedTooltip_safe(cachedSkillObj);
+			ret = cachedSkillObj.__MSU_getNestedTooltipSafe();
 			cachedSkillObj.m.Container = null;
 		}
 
