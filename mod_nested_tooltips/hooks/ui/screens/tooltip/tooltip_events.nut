@@ -17,20 +17,10 @@
 		}
 
 		local entityId = "entityId" in _data ? _data.entityId : null;
-		// local skillId = "skillId" in _data ? _data.skillId : null;
 		local itemId = "itemId" in _data ? _data.itemId : null;
 		local itemOwner = "itemOwner" in _data ? _data.itemOwner : null;
-
-		local skillId = ::MSU.NestedTooltips.getObjFromFilename(_data.filename, ::MSU.NestedTooltips.SkillObjectsByFilename).getID();
-		local entity = entityId != null ? ::Tactical.getEntityByID(entityId) : null;
-		local skill;
-		if (entity != null)
-		{
-			skill = entity.getSkills().getSkillByID(skillId);
-		}
-
-		if (skill != null)
-			return getNestedTooltip_safe(skill);
+		local cachedSkillObj = ::MSU.NestedTooltips.getObjFromFilename(_data.filename, ::MSU.NestedTooltips.SkillObjectsByFilename);
+		local skillId = cachedSkillObj.getID();
 
 		local ret;
 
@@ -73,10 +63,19 @@
 
 		if (ret == null)
 		{
-			skill = ::MSU.NestedTooltips.getObjFromFilename(_data.Filename, ::MSU.NestedTooltips.SkillObjectsByFilename);
-			skill.m.Container = ::MSU.getDummyPlayer().getSkills();
-			ret = getNestedTooltip_safe(skill);
-			skill.m.Container = null;
+			local entity = entityId != null ? ::Tactical.getEntityByID(entityId) : null;
+			if (entity != null)
+			{
+				local skill = entity.getSkills().getSkillByID(skillId);
+				if (skill != null)
+				{
+					return getNestedTooltip_safe(skill);
+				}
+			}
+
+			cachedSkillObj.m.Container = ::MSU.getDummyPlayer().getSkills();
+			ret = getNestedTooltip_safe(cachedSkillObj);
+			cachedSkillObj.m.Container = null;
 		}
 
 		return ret;
