@@ -35,6 +35,23 @@
 		::Hooks.registerJS(file + ".js");
 	}
 
+	local function populateObjectsByFilename( _path, _table )
+	{
+		foreach (path in ::IO.enumerateFiles(_path))
+		{
+			local arr = split(path, "/");
+			local filename = arr.pop();
+			while (filename in _table)
+			{
+				filename = arr.pop() + "/" + filename;
+			}
+			_table[filename] <- path;
+		}
+	}
+
+	populateObjectsByFilename("scripts/skills", ::MSU.NestedTooltips.SkillObjectsByFilename);
+	populateObjectsByFilename("scripts/items", ::MSU.NestedTooltips.ItemObjectsByFilename);
+
 	::Hooks.registerJS("ui/mods/msu/nested_tooltips.js");
 	::Hooks.registerCSS("ui/mods/msu/css/nested_tooltips.css");
 });

@@ -82,33 +82,22 @@ local __dynamicFieldRegexp = regexp("\\$([^\\$]+)\\$");
 		}
 	}
 
-	local ret = "";
-
 	local filename = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_extraData).filename;
+	local obj;
 	switch (_key)
 	{
 		case "Perk":
-			ret = ::Const.Perks.findById(::MSU.NestedTooltips.PerkIDByFilename[filename])[_field];
+			obj = ::Const.Perks.findById(::MSU.NestedTooltips.PerkIDByFilename[filename]);
 			break;
 
 		case "Skill":
-			ret = ::new("scripts/skills/" + filename).m[_field];
+			obj = ::MSU.System.Tooltips.getObjFromFilename(filename, ::MSU.NestedTooltips.SkillObjectsByFilename).m;
 			break;
 
 		case "Item":
-			local item;
-			if (filename in ::MSU.NestedTooltips.ItemObjectsByFilename)
-			{
-				item = ::MSU.NestedTooltips.ItemObjectsByFilename[filename];
-			}
-			else
-			{
-				item = ::new("scripts/items/" + filename);
-				::MSU.NestedTooltips.ItemObjectsByFilename[filename] <- item;
-			}
-			ret = item.m[_field];
+			obj = ::MSU.System.Tooltips.getObjFromFilename(filename, ::MSU.NestedTooltips.ItemObjectsByFilename).m;
 			break;
 	}
 
-	return isLower ? ret.tolower() : ret;
+	return isLower ? obj[_field].tolower() : obj[_field];
 }

@@ -18,7 +18,7 @@
 
 		local entityId = "entityId" in _data ? _data.entityId : null;
 		local itemId = "itemId" in _data ? _data.itemId : null;
-		local scriptPath = "scripts/skills/" + _data.filename;
+		local scriptPath = ::IO.scriptFilenameByHash(::MSU.System.Tooltips.getObjFromFilename(_data.filename, ::MSU.NestedTooltips.SkillObjectsByFilename).ClassNameHash);
 		local className = split(_data.filename, "/").top();
 
 		local entity = entityId != null ? ::Tactical.getEntityByID(entityId) : null;
@@ -117,15 +117,7 @@
 		}
 		else
 		{
-			if (_data.filename in ::MSU.NestedTooltips.ItemObjectsByFilename)
-			{
-				item = ::MSU.NestedTooltips.ItemObjectsByFilename[_data.filename];
-			}
-			else
-			{
-				item = ::new("scripts/items/" + _data.filename);
-				::MSU.NestedTooltips.ItemObjectsByFilename[_data.filename] <- item;
-			}
+			item = ::MSU.System.Tooltips.getObjFromFilename(_data.filename, ::MSU.NestedTooltips.ItemObjectsByFilename);
 			::NestedTooltips.NestedTooltipItems[item.getInstanceID()] <- ::MSU.asWeakTableRef(item);
 		}
 
