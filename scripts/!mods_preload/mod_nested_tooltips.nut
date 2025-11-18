@@ -30,13 +30,6 @@
 		::Hooks.registerJS(file + ".js");
 	}
 
-	::Hooks.registerJS("ui/mods/msu/nested_tooltips.js");
-	::Hooks.registerCSS("ui/mods/msu/css/nested_tooltips.css");
-});
-
-::NestedTooltips.MH.queue(">mod_msu", function() {
-	::MSU.__canCreateDummyPlayer = true;
-
 	local function populateObjectsByFilename( _path, _table )
 	{
 		foreach (path in ::IO.enumerateFiles(_path))
@@ -47,15 +40,17 @@
 			{
 				filename = arr.pop() + "/" + filename;
 			}
-			local obj = ::new(path);
-			if (::isKindOf(obj, "skill"))
-			{
-				skill.saveBaseValues();
-			}
-			_table[filename] <- obj;
+			_table[filename] <- path;
 		}
 	}
 
 	populateObjectsByFilename("scripts/skills", ::MSU.NestedTooltips.SkillObjectsByFilename);
 	populateObjectsByFilename("scripts/items", ::MSU.NestedTooltips.ItemObjectsByFilename);
+
+	::Hooks.registerJS("ui/mods/msu/nested_tooltips.js");
+	::Hooks.registerCSS("ui/mods/msu/css/nested_tooltips.css");
+});
+
+::NestedTooltips.MH.queue(">mod_msu", function() {
+	::MSU.__canCreateDummyPlayer = true;
 }, ::Hooks.QueueBucket.FirstWorldInit);

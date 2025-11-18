@@ -159,7 +159,7 @@
 		{
 			foreach (itemObj in ::MSU.NestedTooltips.ItemObjectsByFilename)
 			{
-				if (itemObj.getInstanceID() == _itemId)
+				if (typeof itemObj != "string" && itemObj.getInstanceID() == _itemId)
 				{
 					item = itemObj;
 					break;

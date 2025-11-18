@@ -25,6 +25,15 @@
 			throw ::MSU.Exception.KeyNotFound(_filename);
 		}
 
+		if (typeof obj == "string")
+		{
+			obj = ::new(obj);
+			_table[_filename] = obj;
+			if (::isKindOf(obj, "skill"))
+			{
+				obj.saveBaseValues();
+			}
+		}
 		return obj;
 	}
 };
