@@ -118,6 +118,10 @@ local ImageKeywordMap = {};
 	if (typeof obj == "string")
 	{
 		obj = ::new(obj);
+		if (::isKindOf(obj, "skill"))
+		{
+			obj.saveBaseValues();
+		}
 		_table[_filename] = obj;
 	}
 	return obj;

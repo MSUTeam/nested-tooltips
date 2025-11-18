@@ -78,7 +78,7 @@
 
 		if (ret == null)
 		{
-			skill = ::new(scriptPath);
+			local skill = ::MSU.System.Tooltips.getObjFromFilename(_data.filename, ::MSU.NestedTooltips.SkillObjectsByFilename);
 			skill.m.Container = ::MSU.getDummyPlayer().getSkills();
 			skill.m.Item = item;
 			ret = getNestedTooltip_safe(skill);
