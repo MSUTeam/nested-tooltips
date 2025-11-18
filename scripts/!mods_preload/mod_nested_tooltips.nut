@@ -37,28 +37,25 @@
 ::NestedTooltips.MH.queue(">mod_msu", function() {
 	::MSU.__canCreateDummyPlayer = true;
 
-	foreach (file in ::IO.enumerateFiles("scripts/skills"))
+	local function populateObjectsByFilename( _path, _table )
 	{
-		if (file == "scripts/skills/skill")
-			continue;
-
-		local skill = ::new(file);
-		if (::isKindOf(skill, "skill"))
+		foreach (path in ::IO.enumerateFiles(_path))
 		{
-			skill.saveBaseValues();
-			::MSU.NestedTooltips.SkillObjectsByFilename[skill.ClassName] <- skill;
+			local arr = split(path, "/");
+			local filename = arr.pop();
+			while (filename in _table)
+			{
+				filename = arr.pop() + "/" + filename;
+			}
+			local obj = ::new(path);
+			if (::isKindOf(obj, "skill"))
+			{
+				skill.saveBaseValues();
+			}
+			_table[filename] <- obj;
 		}
 	}
 
-	foreach (file in ::IO.enumerateFiles("scripts/items"))
-	{
-		if (file == "scripts/items/item")
-			continue;
-
-		local item = ::new(file);
-		if (::isKindOf(item, "item"))
-		{
-			::MSU.NestedTooltips.ItemObjectsByFilename[item.ClassName] <- item;
-		}
-	}
+	populateObjectsByFilename("scripts/skills", ::MSU.NestedTooltips.SkillObjectsByFilename);
+	populateObjectsByFilename("scripts/items", ::MSU.NestedTooltips.ItemObjectsByFilename);
 }, ::Hooks.QueueBucket.FirstWorldInit);
