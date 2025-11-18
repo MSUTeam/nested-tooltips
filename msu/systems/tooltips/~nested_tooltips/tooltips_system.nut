@@ -70,3 +70,24 @@ local ImageKeywordMap = {};
 		Data = extraData
 	};
 }
+
+::MSU.Class.TooltipsSystem.parseExtraDataForNestedTooltip <- function( _extraData )
+{
+	local arr = split(_extraData, ",");
+	local ret = {
+		filename = arr[0]
+	};
+
+	for (local i = 1; i < arr.len(); i++) // start at idx 1 because 0 is filename and already added
+	{
+		local pair = split(arr[i], ":");
+		ret[pair[0]] <- pair[1] == "null" ? null : pair[1];
+	}
+
+	if ("entityId" in ret && typeof ret.entityId == "string" && ret.entityId != "default")
+	{
+		ret.entityId = ret.entityId.tointeger();
+	}
+
+	return ret;
+}
