@@ -7,7 +7,12 @@
 	q.getDefaultNestedTooltip <- function()
 	{
 		local ret = this.getTooltip();
-		if (::MSU.isNull(this.getItem()))
+		// Remove armor penetration and armor damage numbers for tooltips of nested skills not present on an actor
+		// or without a reference to an item.
+		// This ensures that nested tooltips of attack/weapon skills inside other tooltips which are meant just
+		// as a reference to the skill in general do not display any specific damage numbers as the damage numbers
+		// in actual use would be dependent on the item or character that skill would be present on.
+		if (::MSU.isNull(this.getItem()) && ::MSU.isEqual(this.getContainer(), ::MSU.getDummyPlayer().getSkills()))
 		{
 			foreach (i, entry in ret)
 			{
