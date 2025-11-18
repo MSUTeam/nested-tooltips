@@ -21,7 +21,7 @@
 		local itemId = "itemId" in _data ? _data.itemId : null;
 		local itemOwner = "itemOwner" in _data ? _data.itemOwner : null;
 
-		local skillId = ::MSU.NestedTooltips.getObjFromFilename(_data.Filename, ::MSU.NestedTooltips.SkillObjectsByFilename).getID();
+		local skillId = ::MSU.NestedTooltips.getObjFromFilename(_data.filename, ::MSU.NestedTooltips.SkillObjectsByFilename).getID();
 		local entity = entityId != null ? ::Tactical.getEntityByID(entityId) : null;
 		local skill;
 		if (entity != null)
@@ -95,7 +95,7 @@
 		}
 		else
 		{
-			item = ::MSU.NestedTooltips.getObjFromFilename(_data.Filename, ::MSU.NestedTooltips.ItemObjectsByFilename);
+			item = ::MSU.NestedTooltips.getObjFromFilename(_data.filename, ::MSU.NestedTooltips.ItemObjectsByFilename);
 		}
 
 		return item.getNestedTooltip();
