@@ -43,15 +43,7 @@
 		local item;
 		if (itemId != null)
 		{
-			local itemOwner = "itemOwner" in _data ? _data.itemOwner : null;
-			if (itemOwner == null)
-			{
-				item = ::NestedTooltips.NestedTooltipItems[itemId];
-			}
-			else
-			{
-				item = this.getItemByItemOwner(entityId, itemId, itemOwner);
-			}
+			item = this.getItemByItemOwner(entityId, itemId, "itemOwner" in _data ? _data.itemOwner : null);
 		}
 
 		if (!::MSU.isNull(item))
@@ -105,20 +97,11 @@
 		local itemId = "itemId" in _data ? _data.itemId : null;
 		if (itemId != null)
 		{
-			local itemOwner = "itemOwner" in _data ? _data.itemOwner : null;
-			if (itemOwner == null)
-			{
-				item = ::NestedTooltips.NestedTooltipItems[itemId];
-			}
-			else
-			{
-				item = this.getItemByItemOwner("entityId" in _data ? _data.entityId : null, itemId, itemOwner);
-			}
+			item = this.getItemByItemOwner("entityId" in _data ? _data.entityId : null, itemId, "itemOwner" in _data ? _data.itemOwner : null);
 		}
 		else
 		{
 			item = ::MSU.System.Tooltips.getObjFromFilename(_data.filename, ::MSU.NestedTooltips.ItemObjectsByFilename);
-			::NestedTooltips.NestedTooltipItems[item.getInstanceID()] <- ::MSU.asWeakTableRef(item);
 		}
 
 		return item.getNestedTooltip();
@@ -138,6 +121,57 @@
 
 		switch (_itemOwner)
 		{
+			case null:
+				if (entity != null)
+				{
+					item = this.getItemByItemOwner(_entityId, _itemId, "entity");
+					if (item == null && entity.isPlacedOnMap())
+					{
+						item = this.getItemByItemOwner(_entityId, _itemId, "ground");
+					}
+				}
+				if (item == null)
+				{
+					item = this.getItemByItemOwner(_entityId, _itemId, "stash");
+				}
+				if (item == null)
+				{
+					if (::World.Crafting.getBlueprint(_itemId) != null)
+					{
+						item = this.getItemByItemOwner(_entityId, _itemId, "craft");
+						if (item == null)
+						{
+							item = this.getItemByItemOwner(_entityId, _itemId, "blueprint");
+						}
+					}
+				}
+				if (item == null)
+				{
+					if (::World.State.getTownScreen() != null && ::World.State.getTownScreen().getShopDialogModule() != null && ::World.State.getTownScreen().getShopDialogModule().getShop() != null)
+					{
+						item = this.getItemByItemOwner(_entityId, _itemId, "world-town-screen-shop-dialog-module.shop");
+					}
+				}
+				if (item == null)
+				{
+					if ("CombatResultLoot" in ::Tactical && ::Tactical.CombatResultLoot != null)
+					{
+						item = this.getItemByItemOwner(_entityId, _itemId, "tactical-combat-result-screen.found-loot");
+					}
+				}
+				if (item == null)
+				{
+					foreach (it in ::MSU.NestedTooltips.ItemObjectsByFilename)
+					{
+						if (typeof it != "string" && it.getInstanceID() == _itemId)
+						{
+							item = it;
+							break;
+						}
+					}
+				}
+				break;
+
 			case "entity":
 				if (entity != null)	item = entity.getItems().getItemByInstanceID(_itemId);
 				break;

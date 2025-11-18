@@ -2,12 +2,7 @@
 	ID = "mod_nested_tooltips",
 	Name = "Nested Tooltips Framework",
 	Version = "0.1.13",
-	GitHubURL = "https://github.com/MSUTeam/nested-tooltips",
-	NestedTooltipItems = {},
-	function addItemForNestedTooltip( _item )
-	{
-		this.NestedTooltipItems[_item.getInstanceID()] <- ::MSU.asWeakTableRef(_item);
-	}
+	GitHubURL = "https://github.com/MSUTeam/nested-tooltips"
 }
 
 ::NestedTooltips.MH <- ::Hooks.register(::NestedTooltips.ID, ::NestedTooltips.Version, ::NestedTooltips.Name);

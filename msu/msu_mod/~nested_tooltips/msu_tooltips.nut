@@ -38,8 +38,8 @@
 		// itemId must be passed in ExtraData if it is desired to be used
 		// i.e. we don't take it from the tooltip stack
 		// Similarly any other info from the tooltip stack e.g. entityId is ignored
-		// for the purposes of item nested tooltips because we wanted the nested tooltip of the item
-		// that has been added with itemId into the NestedTooltipItems table
+		// for the purposes of item nested tooltips because there may be different
+		// entityId associated with different nested item tooltips
 		local original_entityId = "entityId" in _data ? _data.entityId : null;
 		_data = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData);
 		// entityId is required for proper handling of finding item from itemOwner
