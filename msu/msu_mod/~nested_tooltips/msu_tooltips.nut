@@ -55,6 +55,11 @@
 				_data[pair[0]] <- pair[1] == "null" ? null : pair[1];
 			}
 		}
+		// Will be string when passed manually via ExtraData in nested tooltip string
+		if (typeof _data.entityId == "string")
+		{
+			_data.entityId = _data.entityId.tointeger();
+		}
 		return ::TooltipEvents.general_queryItemNestedTooltipData(_data);
 	}),
 });
