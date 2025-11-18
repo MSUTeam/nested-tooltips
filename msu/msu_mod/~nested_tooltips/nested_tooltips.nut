@@ -1,6 +1,7 @@
 ::MSU.NestedTooltips <- {
 	SkillObjectsByFilename = {},
 	ItemObjectsByFilename = {},
+	ItemObjectsByInstanceID = {},
 	PerkIDByFilename = {},
 
 	function getObjFromFilename( _filename, _table )
@@ -33,7 +34,17 @@
 			{
 				obj.saveBaseValues();
 			}
+			else if (::isKindOf(obj, "item"))
+			{
+				this.ItemObjectsByInstanceID[obj.getInstanceID()] <- obj;
+			}
 		}
+
 		return obj;
+	}
+
+	function getItemByInstanceID( _id )
+	{
+		return _id in this.ItemObjectsByInstanceID ? this.ItemObjectsByInstanceID[_id] : null;
 	}
 };

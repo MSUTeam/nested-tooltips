@@ -157,14 +157,7 @@
 
 		if (item == null && _itemId != null)
 		{
-			foreach (itemObj in ::MSU.NestedTooltips.ItemObjectsByFilename)
-			{
-				if (typeof itemObj != "string" && itemObj.getInstanceID() == _itemId)
-				{
-					item = itemObj;
-					break;
-				}
-			}
+			item = ::MSU.NestedTooltips.getItemByInstanceID(_itemId);
 		}
 
 		return item;
