@@ -21,23 +21,6 @@
 		local scriptPath = ::IO.scriptFilenameByHash(::MSU.System.Tooltips.getObjFromFilename(_data.filename, ::MSU.NestedTooltips.SkillObjectsByFilename).ClassNameHash);
 		local className = split(_data.filename, "/").top();
 
-		local entity = entityId != null ? ::Tactical.getEntityByID(entityId) : null;
-		local skill;
-		if (entity != null)
-		{
-			foreach (s in entity.getSkills().m.Skills)
-			{
-				if (s.ClassName == className && !s.isGarbage() && !s.isHidden() && ::IO.scriptFilenameByHash(s.ClassNameHash) == scriptPath)
-				{
-					skill = s;
-					break;
-				}
-			}
-		}
-
-		if (skill != null)
-			return getNestedTooltip_safe(skill);
-
 		local ret;
 
 		local item;
@@ -73,6 +56,22 @@
 				if (existingItem != null)
 				{
 					dummyContainer.equip(existingItem);
+				}
+			}
+		}
+
+		if (ret == null)
+		{
+			local entity = entityId != null ? ::Tactical.getEntityByID(entityId) : null;
+			if (entity != null)
+			{
+				foreach (s in entity.getSkills().m.Skills)
+				{
+					if (s.ClassName == className && !s.isGarbage() && !s.isHidden() && ::IO.scriptFilenameByHash(s.ClassNameHash) == scriptPath)
+					{
+						ret = getNestedTooltip_safe(s);
+						break;
+					}
 				}
 			}
 		}
