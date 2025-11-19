@@ -23,7 +23,14 @@
 			local isDummyEquipping = ::MSU.isNull(item.getContainer());
 			if (isDummyEquipping)
 			{
-				dummyContainer.unequip(existingItem);
+				if (existingItem != null)
+				{
+					if (existingItem.getCurrentSlotType() == ::Const.ItemSlot.Bag)
+						dummyContainer.removeFromBag(existingItem);
+					else
+						dummyContainer.unequip(existingItem);
+				}
+
 				dummyContainer.equip(item);
 			}
 
@@ -38,7 +45,10 @@
 
 			if (isDummyEquipping)
 			{
-				dummyContainer.unequip(item);
+				if (item.getCurrentSlotType() == ::Const.ItemSlot.Bag)
+					dummyContainer.removeFromBag(item);
+				else
+					dummyContainer.unequip(item);
 				if (existingItem != null)
 				{
 					dummyContainer.equip(existingItem);
