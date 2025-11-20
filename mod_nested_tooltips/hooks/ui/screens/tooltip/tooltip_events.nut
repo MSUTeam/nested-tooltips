@@ -108,6 +108,39 @@
 
 		switch (_itemOwner)
 		{
+			case null:
+				if (entity != null)
+				{
+					item = this.getItemByItemOwner(_entityId, _itemId, "entity");
+					if (item == null && entity.isPlacedOnMap())
+					{
+						item = this.getItemByItemOwner(_entityId, _itemId, "ground");
+					}
+				}
+				if (item == null)
+				{
+					item = this.getItemByItemOwner(_entityId, _itemId, "stash");
+				}
+				if (item == null)
+				{
+					if (::World.State.getTownScreen() != null && ::World.State.getTownScreen().getShopDialogModule() != null && ::World.State.getTownScreen().getShopDialogModule().getShop() != null)
+					{
+						item = this.getItemByItemOwner(_entityId, _itemId, "world-town-screen-shop-dialog-module.shop");
+					}
+				}
+				if (item == null)
+				{
+					if ("CombatResultLoot" in ::Tactical && ::Tactical.CombatResultLoot != null)
+					{
+						item = this.getItemByItemOwner(_entityId, _itemId, "tactical-combat-result-screen.found-loot");
+					}
+				}
+				if (item == null)
+				{
+					item = ::MSU.NestedTooltips.getItemByInstanceID(_itemId);
+				}
+				break;
+
 			case "entity":
 				if (entity != null)	item = entity.getItems().getItemByInstanceID(_itemId);
 				break;
@@ -122,12 +155,6 @@
 				local result = ::Stash.getItemByInstanceID(_itemId);
 				if (result != null) item = result.item;
 				break;
-
-			case "craft":
-				return ::World.Crafting.getBlueprint(_itemId).getTooltip();
-
-			case "blueprint":
-				return ::World.Crafting.getBlueprint(_entityId).getTooltipForComponent(_itemId);
 
 			case "world-town-screen-shop-dialog-module.stash":
 				local result = ::Stash.getItemByInstanceID(_itemId);
@@ -153,11 +180,6 @@
 				local result = ::Tactical.CombatResultLoot.getItemByInstanceID(_itemId);
 				if (result != null) item = result.item;
 				break;
-		}
-
-		if (item == null && _itemId != null)
-		{
-			item = ::MSU.NestedTooltips.getItemByInstanceID(_itemId);
 		}
 
 		return item;
