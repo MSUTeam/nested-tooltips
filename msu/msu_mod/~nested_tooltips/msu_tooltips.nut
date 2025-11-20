@@ -26,12 +26,20 @@
 		return ::TooltipEvents.general_querySkillNestedTooltipData(_data);
 	}),
 	Item = ::MSU.Class.CustomTooltip(function(_data) {
+		// itemId, entityId etc. must be passed in ExtraData if it is desired to be used
+		// i.e. we don't take it from the tooltip stack.
+		// Info such as entityId is ignored from the tooltip stack for the purposes of item
+		// nested tooltips because there may be different entityId associated with
+		// different nested item tooltips.
 		local original_entityId = "entityId" in _data ? _data.entityId : null;
 		_data = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData);
-		// entityId is required for proper handling of finding item from itemOwner
-		if (!("entityId" in _data) || _data.entityId == "default")
+		if (!("entityId" in _data))
 		{
-			_data.entityId <- original_entityId;
+			_data.entityId <- null;
+		}
+		else if (_data.entityId == "default")
+		{
+			_data.entityId = original_entityId;
 		}
 		return ::TooltipEvents.general_queryItemNestedTooltipData(_data);
 	}),
