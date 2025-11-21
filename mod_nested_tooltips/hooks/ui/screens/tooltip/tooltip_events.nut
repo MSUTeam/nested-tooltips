@@ -17,15 +17,25 @@
 
 		if (!::MSU.isNull(item))
 		{
+			local isEquipped = !::MSU.isNull(item.getContainer());
+
+			// If equipped then make a clone of the item.
+			if (isEquipped)
+			{
+				local data = ::MSU.Class.SerializationData();
+				item.onSerialize(data.getSerializationEmulator());
+				item = ::new(::IO.scriptFilenameByHash(item.ClassNameHash));
+				item.onDeserialize(data.getDeserializationEmulator());
+			}
+
 			local dummyContainer = ::MSU.getDummyPlayer().getItems();
 			local existingItem = dummyContainer.getItemAtSlot(item.getSlotType());
 
-			local isDummyEquipping = ::MSU.isNull(item.getContainer());
-			if (isDummyEquipping)
+			if (existingItem != null)
 			{
 				dummyContainer.unequip(existingItem);
-				dummyContainer.equip(item);
 			}
+			dummyContainer.equip(item);
 
 			foreach (s in item.getSkills())
 			{
@@ -36,13 +46,10 @@
 				}
 			}
 
-			if (isDummyEquipping)
+			dummyContainer.unequip(item);
+			if (existingItem != null)
 			{
-				dummyContainer.unequip(item);
-				if (existingItem != null)
-				{
-					dummyContainer.equip(existingItem);
-				}
+				dummyContainer.equip(existingItem);
 			}
 		}
 
