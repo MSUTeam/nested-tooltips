@@ -27,6 +27,11 @@
 	{
 		return ::MSU.Class.DummyPlayerTile();
 	}
+
+	// Overwrite with empty function for performance as we don't care about dummy player's appearance
+	::MSU.DummyPlayer.onAppearanceChanged = function( _appearance, _setDirty = true )
+	{
+	}
 }
 
 ::MSU.__destroyDummyPlayer <- function()
