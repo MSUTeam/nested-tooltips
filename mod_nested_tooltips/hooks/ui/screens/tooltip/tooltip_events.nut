@@ -110,25 +110,21 @@
 				}
 				if (item == null)
 				{
-					item = this.getItemByItemOwner(_entityId, _itemId, "stash");
-				}
-				if (item == null)
-				{
 					if (::World.State.getTownScreen() != null && ::World.State.getTownScreen().getShopDialogModule() != null && ::World.State.getTownScreen().getShopDialogModule().getShop() != null)
 					{
 						item = this.getItemByItemOwner(_entityId, _itemId, "world-town-screen-shop-dialog-module.shop");
 					}
-				}
-				if (item == null)
-				{
-					if ("CombatResultLoot" in ::Tactical && ::Tactical.CombatResultLoot != null)
+					if (item == null)
 					{
-						item = this.getItemByItemOwner(_entityId, _itemId, "tactical-combat-result-screen.found-loot");
+						if ("CombatResultLoot" in ::Tactical && ::Tactical.CombatResultLoot != null)
+						{
+							item = this.getItemByItemOwner(_entityId, _itemId, "tactical-combat-result-screen.found-loot");
+						}
+						if (item == null)
+						{
+							item = ::MSU.NestedTooltips.getItemByInstanceID(_itemId);
+						}
 					}
-				}
-				if (item == null)
-				{
-					item = ::MSU.NestedTooltips.getItemByInstanceID(_itemId);
 				}
 				break;
 
