@@ -70,7 +70,7 @@
 			this.m.Actor.getSkills().onUnequip(item);
 		}
 
-		local ret = __original(_item);
+		local ret = __original(_slot);
 		// Vanilla calls skill_container update only for player controlled characters at the end of __original.
 		// So we call it for NPCs manually.
 		if (ret && !::MSU.isNull(this.m.Actor) && this.m.Actor.isAlive() && !this.m.Actor.isPlayerControlled())
