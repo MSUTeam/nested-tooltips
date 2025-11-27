@@ -1,7 +1,7 @@
 ::NestedTooltips <- {
 	ID = "mod_nested_tooltips",
 	Name = "Nested Tooltips Framework",
-	Version = "0.2.2",
+	Version = "0.2.3",
 	GitHubURL = "https://github.com/MSUTeam/nested-tooltips"
 }
 
