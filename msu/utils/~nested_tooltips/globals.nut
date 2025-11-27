@@ -28,6 +28,15 @@
 		return ::MSU.Class.DummyPlayerTile();
 	}
 
+	// Overwrite the hasSprite function to always return false so that no sprite manipulation happens
+	// on the dummy player. It has been observed that equipping/unequipping items on the dummy player
+	// can cause crashes randomly sometimes in various actor functions which access/manipulate sprite brushes.
+	// No idea why.
+	::MSU.DummyPlayer.hasSprite = function( _name )
+	{
+		return false;
+	}
+
 	// Overwrite with empty function for performance as we don't care about dummy player's appearance
 	::MSU.DummyPlayer.onAppearanceChanged = function( _appearance, _setDirty = true )
 	{
