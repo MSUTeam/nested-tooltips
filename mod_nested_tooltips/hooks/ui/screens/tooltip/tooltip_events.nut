@@ -122,7 +122,11 @@
 						}
 						if (item == null)
 						{
-							item = ::MSU.NestedTooltips.getItemByInstanceID(_itemId);
+							item = this.getItemByItemOwner(_entityId, _itemId, "stash");
+							if (item == null)
+							{
+								item = ::MSU.NestedTooltips.getItemByInstanceID(_itemId);
+							}
 						}
 					}
 				}
