@@ -63,8 +63,8 @@ local __dynamicFieldRegexp = regexp("\\$([^\\$]+)\\$");
 
 ::MSU.Class.TooltipsModAddon.__generateNestedTextFromObj <- function( _field, _key, _extraData )
 {
-	// MSU.__canCreateDummyPlayer is flipped by us during the FirstWorldInit bucket
-	// so we can use it here to check whether that bucket has been reached.
+	// MSU.__canCreateDummyPlayer is flipped by us during the first world init
+	// so we can use it here to check whether that has been reached.
 	if (_key != "Perk" && !::MSU.__canCreateDummyPlayer)
 	{
 		::logError("BB Objects must not be instantiated before hooks have completed, therefore object specific fields cannot be used in parseString until a FirstWorldInit bucket queued after " + ::NestedTooltips.ID)
