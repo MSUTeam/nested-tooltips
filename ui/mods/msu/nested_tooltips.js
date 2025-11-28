@@ -3,7 +3,7 @@ MSU.NestedTooltip = {
 	__imgRegexp : /(?:\[|&#91;)imgtooltip=([\w\.]+?)\.(.+?)(?:\]|&#93;)(.*?)(?:\[|&#91;)\/imgtooltip(?:\]|&#93;)/gm,
 	KeyImgMap : {},
 	TextStyle: "",
-
+	IconPlaceholderImg : "mods/mod_nested_tooltips/mod_nested_tooltips_placeholder.png",
 	TooltipStack : {
 	    stack : [],
 	    passThroughData : {},
@@ -444,10 +444,58 @@ MSU.NestedTooltip = {
 		var tempContainer = Screens.TooltipScreen.mTooltipModule.mContainer;
 		var ret = $('<div class="tooltip-module ui-control-tooltip-module msu-nested-tooltip"/>');
 		Screens.TooltipScreen.mTooltipModule.mContainer = ret;
+		this.replaceIconImagesWithPlaceholders(_backendData);
 		Screens.TooltipScreen.mTooltipModule.buildFromData(_backendData, false, _contentType);
+		this.replaceIconImagePlaceholders(ret);
 		this.parseImgPaths(ret);
 		Screens.TooltipScreen.mTooltipModule.mContainer = tempContainer;
 		return ret;
+	},
+	replaceIconImagesWithPlaceholders: function(_backendData) {
+		// We need to replace icon sources that are the DSL of nested tooltips with a valid src before passing it to the vanilla tooltip builder
+		// otherwise, we get logspam due to missing/unknown images
+		// we use a placeholder 1x1 image to which we append the tooltip DSL
+		// later, we will extract the tooltip DSL, and create the real icon element with it
+		for (var i = 0; i < _backendData.length; ++i) {
+			var data = _backendData[i];
+
+			// Handle single icon
+			if ("icon" in data && data.icon.indexOf("imgtooltip") != -1) {
+				// Use placeholder image with the parsed string added after # so that it stays in src but is ignored for purposes of image loading
+				data.icon = this.IconPlaceholderImg + "#" + data.icon;
+			}
+
+			// Handle icons array
+			if ("icons" in data) {
+				for (var j = 0; j < data.icons.length; ++j) {
+					if (data.icons[j].indexOf("imgtooltip") != -1) {
+						data.icons[j] = this.IconPlaceholderImg + "#" + data.icons[j];
+					}
+				}
+			}
+
+			// Recursively process nested data arrays, EXCLUDING 'icons'
+			// Examples are "children" arrays
+			for (var key in data) {
+				if (data.hasOwnProperty(key) &&
+					key !== 'icons' &&  // ← Exclude already-processed icons
+					Object.prototype.toString.call(data[key]) === '[object Array]') {
+					this.replaceIconImagesWithPlaceholders(data[key]);
+				}
+			}
+		}
+	},
+	replaceIconImagePlaceholders: function(_ret) {
+		// replace the placeholder images from replaceIconImagesWithPlaceholders with the parsed elements
+		var self = this;
+		_ret.find('img').each(function() {
+			if (this.src.indexOf(self.IconPlaceholderImg) != -1) {
+				var idx = this.src.indexOf("#");
+				if (idx !== -1) {
+					$(this).replaceWith($(self.parseImageText(this.src.slice(idx + 1))));
+				}
+			}
+		});
 	},
 	startTooltipLocking : function(_tooltipContainer, _sourceContainer)
 	{
@@ -523,6 +571,8 @@ MSU.NestedTooltip = {
 		{
 			if (this.src in self.KeyImgMap && (this.hasAttribute("msu-nested") != true))
 			{
+				// This is the standard case where we have an icon that represents a generic concept, such as HP
+				// In this case we use the KeyImgMap to look up the right tooltip
 				var entry = self.KeyImgMap[this.src];
 				var img = $(this);
 				var div = $(self.getTooltipLinkHTML(entry.mod, entry.id));
