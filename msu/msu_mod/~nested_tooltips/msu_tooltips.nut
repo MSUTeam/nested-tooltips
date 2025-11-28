@@ -43,6 +43,11 @@
 		}
 		return ::TooltipEvents.general_queryItemNestedTooltipData(_data);
 	}),
+	Entity = ::MSU.Class.CustomTooltip(function( _data ) {
+		_data = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData);
+		_data.entityId <- _data.filename.tointeger();
+		return ::TooltipEvents.general_queryEntityNestedTooltipData(_data);
+	})
 });
 
 local tooltipImageKeywords = {
