@@ -4,7 +4,10 @@
 		local filename = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData).filename;
 		if (filename in ::MSU.NestedTooltips.PerkIDByFilename)
 		{
-			return ::TooltipEvents.general_queryUIPerkTooltipData(null, ::MSU.NestedTooltips.PerkIDByFilename[filename]);
+			local ret = ::TooltipEvents.general_queryUIPerkTooltipData(null, ::MSU.NestedTooltips.PerkIDByFilename[filename]);
+			if (ret != null)
+				ret.insert(0, { contentType = "ui-perk" });
+			return ret;
 		}
 		else
 		{
@@ -23,7 +26,10 @@
 		{
 			_data.entityId = original_entityId;
 		}
-		return ::TooltipEvents.general_querySkillNestedTooltipData(_data);
+		local ret = ::TooltipEvents.general_querySkillNestedTooltipData(_data);
+		if (ret != null)
+			ret.insert(0, { contentType = "skill" });
+		return ret;
 	}),
 	Item = ::MSU.Class.CustomTooltip(function(_data) {
 		// itemId, entityId etc. must be passed in ExtraData if it is desired to be used
@@ -41,12 +47,18 @@
 		{
 			_data.entityId = original_entityId;
 		}
-		return ::TooltipEvents.general_queryItemNestedTooltipData(_data);
+		local ret = ::TooltipEvents.general_queryItemNestedTooltipData(_data);
+		if (ret != null)
+			ret.insert(0, { contentType = "ui-item" });
+		return ret;
 	}),
 	Entity = ::MSU.Class.CustomTooltip(function( _data ) {
 		_data = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData);
 		_data.entityId <- _data.filename.tointeger();
-		return ::TooltipEvents.general_queryEntityNestedTooltipData(_data);
+		local ret = ::TooltipEvents.general_queryEntityNestedTooltipData(_data);
+		if (ret != null)
+			ret.insert(0, { contentType = "entity" });
+		return ret;
 	})
 });
 
