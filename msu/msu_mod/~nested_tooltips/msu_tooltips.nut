@@ -4,7 +4,7 @@
 		local filename = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData).filename;
 		if (filename in ::MSU.NestedTooltips.PerkIDByFilename)
 		{
-			local ret = ::TooltipEvents.general_queryUIPerkTooltipData(null, ::MSU.NestedTooltips.PerkIDByFilename[filename]);
+			local ret = ::TooltipEvents.general_queryUIPerkTooltipData(::MSU.getDummyPlayer().getID(), ::MSU.NestedTooltips.PerkIDByFilename[filename]);
 			if (ret != null)
 				ret.insert(0, { contentType = "ui-perk" });
 			return ret;

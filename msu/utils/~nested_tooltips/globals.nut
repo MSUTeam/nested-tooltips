@@ -28,6 +28,14 @@
 		return ::MSU.Class.DummyPlayerTile();
 	}
 
+	// Vanilla does not expect a null entity in the general_queryUIPerkTooltipData function.
+	// So, we pass the dummy player's ID but overwrite the dummy player's hasPerk function
+	// to return true so that the tooltip_events function does not add perk tier requirements to it.
+	::MSU.DummyPlayer.hasPerk = function( _perkID )
+	{
+		return true;
+	}
+
 	// Overwrite the hasSprite function to always return false so that no sprite manipulation happens
 	// on the dummy player. It has been observed that equipping/unequipping items on the dummy player
 	// can cause crashes randomly sometimes in various actor functions which access/manipulate sprite brushes.
