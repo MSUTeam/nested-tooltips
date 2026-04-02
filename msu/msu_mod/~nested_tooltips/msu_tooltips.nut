@@ -59,6 +59,35 @@
 		if (ret != null)
 			ret.insert(0, { contentType = "entity" });
 		return ret;
+	}),
+	Obj = ::MSU.Class.CustomTooltip(function( _data ) {
+		_data = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData);
+		// It's not actually filename that's passed here, but that's what the key is called
+		// in the return from the parse function above.
+		local obj = ::MSU.System.Tooltips.ParsedObjects[_data.filename];
+
+		local ret;
+		if ("func" in _data)
+		{
+			ret = obj[_data.func]();
+		}
+		else
+		{
+			ret = obj.getTooltip();
+		}
+
+		if (ret != null && "contentType" in _data)
+		{
+			ret.insert(0, { contentType = _data.contentType });
+		}
+
+		return ret;
+	})
+	Tooltip = ::MSU.Class.CustomTooltip(function( _data ) {
+		// replace the start/end with square brackets
+		// replace the %%%% with quotation marks
+		local str = "[" + ::String.replace(_data.ExtraData.slice(1, -1), "%%%%", "\"") + "]";
+		return compilestring("return " + str)();
 	})
 });
 

@@ -4,13 +4,15 @@
 		{
 			::MSU.__destroyDummyPlayer();
 			::MSU.__canCreateDummyPlayer = true;
+			::MSU.System.Tooltips.ParsedObjects.clear();
 			__original();
 		}
 
-		q.onBeforeSerialize = @(__original) function( _out )
+		q.saveCampaign = @(__original) { function saveCampaign( _campaignFileName, _campaignLabel = null )
 		{
 			::MSU.__destroyDummyPlayer();
-			__original(_out);
-		}
+			::MSU.System.Tooltips.ParsedObjects.clear();
+			__original(_campaignFileName, _campaignLabel);
+		}}.saveCampaign;
 	});
 });
