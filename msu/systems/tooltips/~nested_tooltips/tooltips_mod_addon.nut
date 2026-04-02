@@ -4,6 +4,42 @@ local __regexp = regexp("\\[([^\\[\\]]+)\\|([^\\[\\]]+)\\]"); // \[(.+?)\|([\w\.
 // instead of empty string as the default alias for "$Name$"
 local __dynamicFieldRegexp = regexp("\\$([^\\$]+)\\$");
 
+::MSU.Class.TooltipsModAddon.parseObject <- function ( _obj )
+{
+	local key = _obj + "";
+	::MSU.System.Tooltips.ParsedObjects[key] <- _obj.weakref();
+	return key;
+}
+
+::MSU.Class.TooltipsModAddon.parseTooltip <- function( _tooltip )
+{
+	local ret = "<";
+	foreach (entry in _tooltip)
+	{
+		ret += "{";
+		foreach (k, v in entry)
+		{
+			ret += k + "=";
+			switch (typeof v)
+			{
+				case "string":
+					ret += "%%%%" + v + "%%%%";
+					break;
+				case "array":
+					ret += ::MSU.Class.TooltipsModAddon.parseTooltip(v);
+					break;
+				default:
+					ret += v;
+					break;
+			}
+			ret += ",";
+		}
+		ret += "},";
+	}
+	ret = ret.slice(0, -1) + ">";
+	return ret;
+}
+
 // the __regexp should be a static member of the TooltipsModAddon class when merging into MSU
 ::MSU.Class.TooltipsModAddon.parseString <- function( _string, _prefix = "" )
 {

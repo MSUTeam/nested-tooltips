@@ -1,5 +1,6 @@
 // Can be a member inside TooltipsSystem once merged into MSU
 local ImageKeywordMap = {};
+::MSU.Class.TooltipsSystem.ParsedObjects <- {};
 
 ::MSU.Class.TooltipsSystem.setTooltipImageKeywords <- function(_modID, _tooltipTable)
 {
