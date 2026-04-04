@@ -7,10 +7,6 @@
 {
 	height: 2.5rem;
 }
-.msu-nested-tooltip-sources-within
-{
-	border-top: 3px solid #AC7327;
-}
 .msu-nested-tooltip-not-hovered
 {
 	-webkit-filter: brightness(50%);

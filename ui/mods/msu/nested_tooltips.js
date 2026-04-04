@@ -429,10 +429,6 @@ MSU.NestedTooltip = {
 		this.startTooltipLocking(tooltipContainer, _sourceContainer);
 
 		var nestedSourcesWithin = tooltipContainer.find(".msu-nested-tooltip-source");
-		if (nestedSourcesWithin.length > 0)
-		{
-			tooltipContainer.addClass("msu-nested-tooltip-sources-within");
-		}
 
 		// Add data that we'll want to pass to any nested tooltips, such as entityId
 		this.TooltipStack.setPassThroughData(_tooltipParams, true);
