@@ -2,6 +2,7 @@
 	ID = "mod_nested_tooltips",
 	Name = "Nested Tooltips Framework",
 	Version = "0.3.0",
+	DummyPlayerRosterID = ::toHash("NestedTooltipsRoster"),
 	GitHubURL = "https://github.com/MSUTeam/nested-tooltips"
 }
 

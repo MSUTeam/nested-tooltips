@@ -12,7 +12,7 @@
 
 ::MSU.__createDummyPlayer <- function()
 {
-	local roster = ::World.createRoster("MSU_Roster");
+	local roster = ::World.createRoster(::NestedTooltips.DummyPlayerRosterID);
 	::MSU.DummyPlayer = roster.create("scripts/entity/tactical/player");
 	::MSU.DummyPlayer.m.Talents.resize(::Const.Attributes.COUNT, 0);
 	::MSU.DummyPlayer.fillAttributeLevelUpValues(::Const.XP.MaxLevelWithPerkpoints - 1);
@@ -54,5 +54,5 @@
 ::MSU.__destroyDummyPlayer <- function()
 {
 	::MSU.DummyPlayer = null;
-	::World.deleteRoster("MSU_Roster");
+	::World.deleteRoster(::NestedTooltips.DummyPlayerRosterID);
 }
