@@ -60,6 +60,14 @@
 			ret.insert(0, { contentType = "entity" });
 		return ret;
 	}),
+	WorldEntity = ::MSU.Class.CustomTooltip(function( _data ) {
+		// The actual ExtraData is the entity id. It's just called filename because of the parse function
+		local entity = ::World.getEntityByID(::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData).filename.tointeger());
+		if (entity != null)
+		{
+			return entity.getTooltip();
+		}
+	}),
 	Obj = ::MSU.Class.CustomTooltip(function( _data ) {
 		_data = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData);
 		// It's not actually filename that's passed here, but that's what the key is called
