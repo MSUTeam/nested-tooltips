@@ -10,10 +10,11 @@
 .tooltip-progress-bar
 {
 	position: absolute;
-	background-image: url(coui://gfx/mods/msu/icons/timeout.png);
-	background-size: 15px 22px;
-	right: 1rem;
-	top: 0.7rem;
+	background-image: url(coui://gfx/mods/msu/icons/nested_tooltips_timeout.png);
+	background-size: 10px auto;
+	background-repeat: no-repeat;
+	right: 0.1rem;
+	top: 0.9rem;
 	width: 15px;
 	height: 22px;
 }

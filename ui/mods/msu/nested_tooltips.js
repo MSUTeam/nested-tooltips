@@ -510,7 +510,7 @@ MSU.NestedTooltip = {
 			complete: function()
 			{
 				progressImage.css("opacity", 1);
-				progressImage.css("background-image", 'url("coui://gfx/ui/icons/icon_locked.png")');
+				progressImage.css("background-image", 'url("coui://gfx/mods/msu/icons/nested_tooltips_locked.png")');
 				var data = _tooltipContainer.data("msu-nested");
 				if (data === undefined)
 				{
