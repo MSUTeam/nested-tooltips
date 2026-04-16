@@ -26,6 +26,8 @@
 		::include(file);
 	}
 
+	::Hooks.registerJS("ui/mods/nested_tooltips/js_hooks/setup.js");
+
 	foreach (file in ::IO.enumerateFiles("ui/mods/nested_tooltips/js_hooks"))
 	{
 		::Hooks.registerJS(file + ".js");
