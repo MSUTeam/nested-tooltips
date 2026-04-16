@@ -3,10 +3,6 @@
 {
 	display: inline;
 }
-.msu-nested-tooltip-source img
-{
-	height: 2.5rem;
-}
 .msu-nested-tooltip-not-hovered
 {
 	-webkit-filter: brightness(50%);

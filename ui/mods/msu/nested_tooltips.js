@@ -1,6 +1,7 @@
 MSU.NestedTooltip = {
 	__regexp : /(?:\[|&#91;)tooltip=([\w\.]+?)\.(.+?)(?:\]|&#93;)(.*?)(?:\[|&#91;)\/tooltip(?:\]|&#93;)/gm,
 	__imgRegexp : /(?:\[|&#91;)imgtooltip=([\w\.]+?)\.(.+?)(?:\]|&#93;)(.*?)(?:\[|&#91;)\/imgtooltip(?:\]|&#93;)/gm,
+	__cssClassRegexp : /,cssClass:([^,\]\s]+)/m,
 	KeyImgMap : {},
 	TextStyle: "",
 	IconPlaceholderImg : "mods/mod_nested_tooltips/mod_nested_tooltips_placeholder.png",
@@ -538,18 +539,19 @@ MSU.NestedTooltip = {
 		_text = _text || "";
 		return '<div class="msu-nested-tooltip-source" style="' + this.TextStyle + '" data-msu-nested-mod="' + _mod + '" data-msu-nested-id="' + _id + '">' + _text + '</div>';
 	},
-	getTooltipImageHTML : function (_mod, _id, _src)
+	getTooltipImageHTML : function (_mod, _id, _src, _cssClass)
 	{
-		var img = '<img msu-nested="true" src="coui://' + _src + '"</img>';
-		return this.getTooltipLinkHTML(_mod, _id, img);
+		var classAttr = 'class="msu-nested-tooltip-source' + (_cssClass ? ' ' + _cssClass : '') + '"';
+		return '<img msu-nested="true" ' + classAttr + ' data-msu-nested-mod="' + _mod + '" data-msu-nested-id="' + _id + '" src="coui://' + _src + '"/>';
 	},
 	parseImageText : function (_text)
 	{
 		var self = this;
 		return _text.replace(this.__imgRegexp, function( _match, _mod, _id, _text)
 		{
-			var ret = self.getTooltipImageHTML(_mod, _id, _text);
-			return ret;
+			// Extract cssClass from the parameter block if it exists
+			var classMatch = _id.match(self.__cssClassRegexp);
+			return self.getTooltipImageHTML(_mod, _id, _text, classMatch ? classMatch[1] : null);
 		})
 	},
 	parseText : function (_text)
@@ -567,13 +569,13 @@ MSU.NestedTooltip = {
 		{
 			if (this.src in self.KeyImgMap && (this.hasAttribute("msu-nested") != true))
 			{
-				// This is the standard case where we have an icon that represents a generic concept, such as HP
-				// In this case we use the KeyImgMap to look up the right tooltip
 				var entry = self.KeyImgMap[this.src];
 				var img = $(this);
-				var div = $(self.getTooltipLinkHTML(entry.mod, entry.id));
-				img.after(div);
-				div.append(img.detach());
+				// Inject attributes directly onto the img element
+				img.addClass('msu-nested-tooltip-source');
+				img.attr('data-msu-nested-mod', entry.mod);
+				img.attr('data-msu-nested-id', entry.id);
+				img.attr('msu-nested', true);
 			}
 		})
 	},
