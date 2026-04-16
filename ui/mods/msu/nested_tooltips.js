@@ -459,14 +459,14 @@ MSU.NestedTooltip = {
 			// Handle single icon
 			if ("icon" in data && data.icon.indexOf("imgtooltip") != -1) {
 				// Use placeholder image with the parsed string added after # so that it stays in src but is ignored for purposes of image loading
-				data.icon = this.IconPlaceholderImg + "#" + data.icon;
+				data.icon = this.IconPlaceholderImg + "#" + data.icon.slice(data.icon.indexOf("[imgtooltip"));
 			}
 
 			// Handle icons array
 			if ("icons" in data) {
 				for (var j = 0; j < data.icons.length; ++j) {
 					if (data.icons[j].indexOf("imgtooltip") != -1) {
-						data.icons[j] = this.IconPlaceholderImg + "#" + data.icons[j];
+						data.icons[j] = this.IconPlaceholderImg + "#" + data.icons[j].slice(data.icons[j].indexOf("[imgtooltip"))
 					}
 				}
 			}
