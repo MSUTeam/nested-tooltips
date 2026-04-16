@@ -12,3 +12,13 @@ WorldEventScreen.prototype.updateHeader = function (_data)
 
 	NestedTooltips.Hooks.WorldEventScreen_updateHeader.call(this, _data);
 }
+
+NestedTooltips.Hooks.WorldEventScreen_renderListItem = WorldEventScreen.prototype.renderListItem;
+WorldEventScreen.prototype.renderListItem = function (_container, _item)
+{
+	MSU.NestedTooltip.replaceIconImagesWithPlaceholders([_item]);
+
+	NestedTooltips.Hooks.WorldEventScreen_renderListItem.call(this, _container, _item);
+
+	MSU.NestedTooltip.replaceIconImagePlaceholders(_container);
+};
