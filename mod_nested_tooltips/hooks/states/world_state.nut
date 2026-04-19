@@ -8,6 +8,13 @@
 			__original();
 		}
 
+		q.loadCampaign = @(__original) { function loadCampaign( _campaignFileName )
+		{
+			::MSU.__destroyDummyPlayer();
+			::MSU.System.Tooltips.ParsedObjects.clear();
+			__original(_campaignFileName);
+		}}.loadCampaign;
+
 		q.saveCampaign = @(__original) { function saveCampaign( _campaignFileName, _campaignLabel = null )
 		{
 			::MSU.__destroyDummyPlayer();
