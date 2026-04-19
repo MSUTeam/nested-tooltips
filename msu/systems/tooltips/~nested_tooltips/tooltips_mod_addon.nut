@@ -4,6 +4,31 @@ local __regexp = regexp("\\[([^\\[\\]]+)\\|([^\\[\\]]+)\\]"); // \[(.+?)\|([\w\.
 // instead of empty string as the default alias for "$Name$"
 local __dynamicFieldRegexp = regexp("\\$([^\\$]+)\\$");
 
+local function byteToUnsigned( _b )
+{
+	return _b < 0 ? _b + 256: _b;
+}
+
+::MSU.Class.TooltipsModAddon.encodeString <- function ( _str )
+{
+	local ret = "";
+	for (local i = 0; i < _str.len(); i++)
+	{
+		ret += format("%03d", byteToUnsigned(_str[i]));
+	}
+	return ret;
+}
+
+::MSU.Class.TooltipsModAddon.decodeString <- function( _str )
+{
+	local ret = "";
+	for (local i = 0; i < _str.len(); i += 3)
+	{
+		ret += format("%c", _str.slice(i, i + 3).tointeger());
+	}
+	return ret;
+}
+
 ::MSU.Class.TooltipsModAddon.parseObject <- function ( _obj )
 {
 	local key = _obj + "";
@@ -80,7 +105,11 @@ local __dynamicFieldRegexp = regexp("\\$([^\\$]+)\\$");
 			tag = "tooltip";
 		}
 
-		ret += format("[%s=%s.%s]%s[/%s]", tag, modID, _prefix + tooltipID, text, tag);
+		// We encode the tooltip tags and the mod id and tooltip id byte-wise as digits
+		// so that any string manipulation like .toupper() does not break them.
+		// We then decode these on the JS side.
+		tag = this.encodeString(tag);
+		ret += format("[%s=%s]%s[/%s]", tag, this.encodeString(format("%s.%s", modID, _prefix + tooltipID)), text, tag);
 		lastPos = match[0].end;
 	}
 

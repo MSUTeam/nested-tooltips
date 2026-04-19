@@ -1,4 +1,5 @@
 MSU.NestedTooltip = {
+	__encodedRegexp : /(?:\[|&#91;)(\d+)=(\d+?)(?:\]|&#93;)(.*?)(?:\[|&#91;)\/\d*116111111108116105112(?:\]|&#93;)/gm, // 116111111108116105112 = "tooltip"
 	__regexp : /(?:\[|&#91;)tooltip=([\w\.]+?)\.(.+?)(?:\]|&#93;)(.*?)(?:\[|&#91;)\/tooltip(?:\]|&#93;)/gm,
 	__imgRegexp : /(?:\[|&#91;)imgtooltip=([\w\.]+?)\.(.+?)(?:\]|&#93;)(.*?)(?:\[|&#91;)\/imgtooltip(?:\]|&#93;)/gm,
 	__cssClassRegexp : /,cssClass:([^,\]\s]+)/m,
@@ -457,14 +458,18 @@ MSU.NestedTooltip = {
 			var data = _backendData[i];
 
 			// Handle single icon
-			if ("icon" in data && data.icon.indexOf("imgtooltip") != -1) {
+			if ("icon" in data) {
+				data.icon = this.parseEncodedText(data.icon);
+
 				// Use placeholder image with the parsed string added after # so that it stays in src but is ignored for purposes of image loading
-				data.icon = this.IconPlaceholderImg + "#" + data.icon.slice(data.icon.indexOf("[imgtooltip"));
+				if (data.icon.indexOf("imgtooltip") != -1)
+					data.icon = this.IconPlaceholderImg + "#" + data.icon.slice(data.icon.indexOf("[imgtooltip"));
 			}
 
 			// Handle icons array
 			if ("icons" in data) {
 				for (var j = 0; j < data.icons.length; ++j) {
+					data.icons[j] = this.parseEncodedText(data.icons[j]);
 					if (data.icons[j].indexOf("imgtooltip") != -1) {
 						data.icons[j] = this.IconPlaceholderImg + "#" + data.icons[j].slice(data.icons[j].indexOf("[imgtooltip"))
 					}
@@ -547,6 +552,7 @@ MSU.NestedTooltip = {
 	parseImageText : function (_text)
 	{
 		var self = this;
+		_text = this.parseEncodedText(_text);
 		return _text.replace(this.__imgRegexp, function( _match, _mod, _id, _text)
 		{
 			// Extract cssClass from the parameter block if it exists
@@ -557,9 +563,31 @@ MSU.NestedTooltip = {
 	parseText : function (_text)
 	{
 		var self = this;
+		_text = this.parseEncodedText(_text);
 		return _text.replace(this.__regexp, function (_match, _mod, _id, _text)
 		{
 			return self.getTooltipLinkHTML(_mod, _id, _text);
+		})
+	},
+	// We encode the tooltip tags and identifiers on the squirrel side
+	// so that any string manipulation e.g. .toupper() does not break
+	// the tags or the mod ids, or tooltip ids.
+	decodeString : function ( _str )
+	{
+		var ret = "";
+		for (var i = 0; i < _str.length; i += 3)
+		{
+			ret += String.fromCharCode(parseInt(_str.slice(i, i + 3), 10));
+		}
+		return ret;
+	},
+	parseEncodedText : function (_text)
+	{
+		var self = this;
+		return _text.replace(this.__encodedRegexp, function (_match, _tag, _identifier, _text)
+		{
+			var tag = self.decodeString(_tag);
+			return '[' + tag + '=' + self.decodeString(_identifier) + ']' + _text + '[/' + tag + ']';
 		})
 	},
 	parseImgPaths : function (_jqueryObj)
