@@ -116,6 +116,21 @@ local function byteToUnsigned( _b )
 	return ret + _string.slice(lastPos);
 }
 
+local __removeRegexp = regexp("\\[\\d+=\\d+\\](.+)\\[/\\d+\\]");
+::MSU.Class.TooltipsModAddon.removeAllFromString <- function( _string )
+{
+	_string = this.parseString(_string);
+	local match;
+	local ret = "";
+	local lastPos = 0;
+	while (match = __removeRegexp.capture(_string, lastPos))
+	{
+		ret += _string.slice(lastPos, match[0].begin) + _string.slice(match[1].begin, match[1].end);
+		lastPos = match[0].end;
+	}
+	return ret + _string.slice(lastPos);
+}
+
 ::MSU.Class.TooltipsModAddon.setTooltipImageKeywords <- function( _table )
 {
 	return ::MSU.System.Tooltips.setTooltipImageKeywords(this.Mod.getID(), _table);
