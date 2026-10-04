@@ -5,7 +5,7 @@ MSU.NestedTooltip = {
 	__cssClassRegexp : /,cssClass:([^,\]\s]+)/m,
 	KeyImgMap : {},
 	TextStyle: "",
-	IconPlaceholderImg : "mods/mod_nested_tooltips/mod_nested_tooltips_placeholder.png",
+	IconPlaceholderImg : "mod_nested_tooltips_placeholder.png",
 	TooltipStack : {
 	    stack : [],
 	    passThroughData : {},
