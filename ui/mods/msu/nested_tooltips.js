@@ -61,6 +61,10 @@ MSU.NestedTooltip = {
 	        return this.stack.length === 0;
 	    },
 
+	    isLocked : function() {
+	    	return this.stack.length > 0 && this.stack[0].isLocked
+	    },
+
 	    size: function() {
 	        return this.stack.length;
 	    },
@@ -100,9 +104,11 @@ MSU.NestedTooltip = {
 			"SHOW" :  function(){ return MSU.getSettingValue(MSU.ID, "showDelay")}, // default 200,
 			"HIDE" :  function(){ return MSU.getSettingValue(MSU.ID, "hideDelay")}, // default 100,
 			"LOCK" :  function(){ return MSU.getSettingValue(MSU.ID, "lockDelay")}, // default 1000,
+			"GRACE" :  function(){ return MSU.getSettingValue(MSU.ID, "graceDelay")} // default 1000,
 		},
-		setTimer : function(_type, _func)
+		setTimer : function(_type, _func, _delayType)
 		{
+			if (!_delayType) _delayType = _type;
 			if (!(_type in this.__Timers))
 			{
 				throw "Type " + _type + " not a valid MSU.NestedTooltip.Timer!"
@@ -110,7 +116,7 @@ MSU.NestedTooltip = {
 			if (this.__Timers[_type] != null) {
 				clearTimeout(this.__Timers[_type]);
 			}
-			this.__Timers[_type] = setTimeout(_func, this.__TimerDelayGetters[_type]());
+			this.__Timers[_type] = setTimeout(_func, this.__TimerDelayGetters[_delayType]());
 		},
 		cancelTimer : function(_type)
 		{
@@ -155,10 +161,16 @@ MSU.NestedTooltip = {
                 });
             }
         },
+
         onSourceLeave : function(event) {
         	MSU.NestedTooltip.Events.cancelTimer("SHOW");
         	MSU.NestedTooltip.Events.cancelTimer("HIDE");
-            MSU.NestedTooltip.Events.setTimer("HIDE", MSU.NestedTooltip.updateStack.bind(MSU.NestedTooltip));
+        	if (MSU.NestedTooltip.TooltipStack.isLocked()) {
+        		MSU.NestedTooltip.Events.setTimer("HIDE", MSU.NestedTooltip.updateStack.bind(MSU.NestedTooltip), "GRACE");
+        	}
+        	else {
+        		MSU.NestedTooltip.Events.setTimer("HIDE", MSU.NestedTooltip.updateStack.bind(MSU.NestedTooltip));
+        	}
         },
 
         onTooltipEnter : function(event)
