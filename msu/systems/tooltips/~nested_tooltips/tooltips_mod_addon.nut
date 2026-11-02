@@ -95,7 +95,7 @@ local function byteToUnsigned( _b )
 			}
 		}
 
-		if (text.find("Img/") != null)
+		if (text.find("Img/") == 0)
 		{
 			text = text.slice(4);
 			tag = "imgtooltip";
