@@ -109,7 +109,7 @@ local function byteToUnsigned( _b )
 		// so that any string manipulation like .toupper() does not break them.
 		// We then decode these on the JS side.
 		tag = this.encodeString(tag);
-		ret += format("[%s=%s]%s[/%s]", tag, this.encodeString(format("%s.%s", modID, _prefix + tooltipID)), text, tag);
+		ret += format("[%s=%s]%s[/%s]", tag, this.encodeString(format("%s.%s", modID, _prefix + tooltipID)), this.__removeAllFromString(text), tag);
 		lastPos = match[0].end;
 	}
 
@@ -117,9 +117,8 @@ local function byteToUnsigned( _b )
 }
 
 local __removeRegexp = regexp("\\[\\d+=\\d+\\](.+)\\[/\\d+\\]");
-::MSU.Class.TooltipsModAddon.removeAllFromString <- function( _string )
+::MSU.Class.TooltipsModAddon.__removeAllFromString <- function( _string )
 {
-	_string = this.parseString(_string);
 	local match;
 	local ret = "";
 	local lastPos = 0;
@@ -129,6 +128,11 @@ local __removeRegexp = regexp("\\[\\d+=\\d+\\](.+)\\[/\\d+\\]");
 		lastPos = match[0].end;
 	}
 	return ret + _string.slice(lastPos);
+}
+
+::MSU.Class.TooltipsModAddon.removeAllFromString <- function( _string )
+{
+	return this.__removeAllFromString(this.parseString(_string));
 }
 
 ::MSU.Class.TooltipsModAddon.setTooltipImageKeywords <- function( _table )
