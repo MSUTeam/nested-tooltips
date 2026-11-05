@@ -143,6 +143,10 @@ local __removeRegexp = regexp("\\[\\d+=\\d+\\](.+)\\[/\\d+\\]");
 // matches the parameter signature of TooltipsModAddon.generateNestedTextFromObj
 ::MSU.Class.TooltipsModAddon.generateNestedTextFromObjCallback <- null;
 
+// Compiled lambdas for the function calls in dynamic fields e.g. "toupper()" in $Name.toupper()$
+// so that each one is only compiled once.
+local __fieldFunctionCache = {};
+
 ::MSU.Class.TooltipsModAddon.__generateNestedTextFromObj <- function( _field, _key, _extraData )
 {
 	// MSU.__canCreateDummyPlayer is flipped by us during the first world init
@@ -198,7 +202,12 @@ local __removeRegexp = regexp("\\[\\d+=\\d+\\](.+)\\[/\\d+\\]");
 	{
 		while (funcs.len() != 0)
 		{
-			ret = compilestring(format("return @(_s) _s.%s", funcs.pop()))()(ret);
+			local func = funcs.pop();
+			if (!(func in __fieldFunctionCache))
+			{
+				__fieldFunctionCache[func] <- compilestring(format("return @(_s) _s.%s", func))();
+			}
+			ret = __fieldFunctionCache[func](ret);
 		}
 	}
 

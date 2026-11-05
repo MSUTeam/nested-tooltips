@@ -567,10 +567,11 @@ MSU.NestedTooltip = {
 		var classAttr = 'class="msu-nested-tooltip-source' + (_cssClass ? ' ' + _cssClass : '') + '"';
 		return '<img msu-nested="true" ' + classAttr + ' data-msu-nested-mod="' + _mod + '" data-msu-nested-id="' + _id + '" src="coui://' + _src + '"/>';
 	},
-	parseImageText : function (_text)
+	// Pass _isDecoded = true if parseEncodedText was already called on _text
+	parseImageText : function (_text, _isDecoded)
 	{
 		var self = this;
-		_text = this.parseEncodedText(_text);
+		if (!_isDecoded) _text = this.parseEncodedText(_text);
 		return _text.replace(this.__imgRegexp, function( _match, _mod, _id, _text)
 		{
 			// Extract cssClass from the parameter block if it exists
@@ -578,10 +579,11 @@ MSU.NestedTooltip = {
 			return self.getTooltipImageHTML(_mod, _id, _text, classMatch ? classMatch[1] : null);
 		})
 	},
-	parseText : function (_text)
+	// Pass _isDecoded = true if parseEncodedText was already called on _text
+	parseText : function (_text, _isDecoded)
 	{
 		var self = this;
-		_text = this.parseEncodedText(_text);
+		if (!_isDecoded) _text = this.parseEncodedText(_text);
 		return _text.replace(this.__regexp, function (_match, _mod, _id, _text)
 		{
 			return self.getTooltipLinkHTML(_mod, _id, _text);
@@ -721,8 +723,9 @@ MSU.XBBCODE_process = XBBCODE.process;
 XBBCODE.process = function (config)
 {
 	var ret = MSU.XBBCODE_process.call(this, config);
-	ret.html = MSU.NestedTooltip.parseImageText(ret.html);
-	ret.html = MSU.NestedTooltip.parseText(ret.html)
+	ret.html = MSU.NestedTooltip.parseEncodedText(ret.html);
+	ret.html = MSU.NestedTooltip.parseImageText(ret.html, true);
+	ret.html = MSU.NestedTooltip.parseText(ret.html, true);
 	return ret;
 }
 
