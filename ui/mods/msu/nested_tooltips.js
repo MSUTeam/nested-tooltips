@@ -75,7 +75,8 @@ MSU.NestedTooltip = {
 	    	this.passThroughData = {};
     		$.each(_newData, function(_key, _value)
     		{
-    			if (_key === "contentType" || _key === "elementId")
+    			// isTileTooltip belongs only to the tile tooltip itself, not to tooltips nested in it
+    			if (_key === "contentType" || _key === "elementId" || _key === "isTileTooltip")
     				return;
     			self.passThroughData[_key] = _value;
     		})
