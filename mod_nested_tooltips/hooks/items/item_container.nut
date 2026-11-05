@@ -1,33 +1,13 @@
 ::NestedTooltips.MH.hook("scripts/items/item_container", function(q) {
-	// Call MSU skill_container.onUnequip function
-	// Temporary fix for MSU and vanilla while MSU waits to update
+	// VanillaFix: https://steamcommunity.com/app/365360/discussions/1/684112192552961717/
+	// `item_container.unequip` not properly removing bagged items while `item_container.equip` puts them in the bag.
 	// This is necessary for proper equipping/unequipping of bag items for the Dummy Player.
+	// Our removeFromBag hook below calls the MSU skill_container.onUnequip function and updates NPC skills.
 	q.unequip = @(__original) function( _item )
 	{
-		if (_item != null && _item != -1 && _item.getCurrentSlotType() == ::Const.ItemSlot.Bag && _item.getSlotType() == ::Const.ItemSlot.Bag && !::MSU.isNull(this.m.Actor) && this.m.Actor.isAlive())
-		{
-			foreach (item in this.m.Items[_item.getSlotType()])
-			{
-				if (item == _item)
-				{
-					this.m.Actor.getSkills().onUnequip(_item);
-					break;
-				}
-			}
-		}
-
-		// VanillaFix: https://steamcommunity.com/app/365360/discussions/1/684112192552961717/
-		// `item_container.unequip` not properly removing bagged items while `item_container.equip` puts them in the bag.
 		if (_item != null && _item != -1 && _item.getSlotType() == ::Const.ItemSlot.Bag)
 		{
-			local ret = this.removeFromBag(_item);
-			// Vanilla calls skill_container update only for player controlled characters at the end of removeFromBag.
-			// So we call it for NPCs manually.
-			if (ret && !::MSU.isNull(this.m.Actor) && this.m.Actor.isAlive() && !this.m.Actor.isPlayerControlled())
-			{
-				this.m.Actor.getSkills().update();
-			}
-			return ret;
+			return this.removeFromBag(_item);
 		}
 
 		return __original(_item);
