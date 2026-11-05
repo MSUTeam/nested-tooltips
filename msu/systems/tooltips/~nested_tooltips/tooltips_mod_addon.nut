@@ -84,7 +84,7 @@ local function byteToUnsigned( _b )
 		if (text.find("$") != null)
 		{
 			local key = split(fullID, "+")[0];
-			local extraData = ::MSU.System.Tooltips.getTooltip(modID, fullID).Data;
+			local extraData = ::MSU.System.Tooltips.getTooltipAndData(modID, fullID).Data;
 
 			local fieldLastPos = 0;
 			local fieldMatch;
@@ -131,6 +131,11 @@ local __removeRegexp = regexp("\\[\\d+=\\d+\\](.+)\\[/\\d+\\]");
 		lastPos = match[0].end;
 	}
 	return ret + _string.slice(lastPos);
+}
+
+::MSU.Class.TooltipsModAddon.getTooltipAndData <- function( _identifier )
+{
+	return ::MSU.System.Tooltips.getTooltipAndData(this.Mod.getID(), _identifier);
 }
 
 ::MSU.Class.TooltipsModAddon.setTooltipImageKeywords <- function( _table )

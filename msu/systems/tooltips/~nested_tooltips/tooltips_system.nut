@@ -40,8 +40,15 @@ local ImageKeywordMap = {};
 	return true;
 }
 
-// overwrite existing function
+// overwrite existing function so that it ignores the extra data after "+" in the identifier.
+// Keeps the original return value (the tooltip object).
 ::MSU.Class.TooltipsSystem.getTooltip <- function( _modID, _identifier )
+{
+	return this.getTooltipAndData(_modID, _identifier).Tooltip;
+}
+
+// Returns a table { Tooltip = the tooltip object, Data = the extra data after "+" in the identifier or null }
+::MSU.Class.TooltipsSystem.getTooltipAndData <- function( _modID, _identifier )
 {
 	local arr = split(_identifier, "+");
 	local fullKey = split(arr[0], ".");
