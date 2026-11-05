@@ -507,10 +507,13 @@ MSU.NestedTooltip = {
 		// replace the placeholder images from replaceIconImagesWithPlaceholders with the parsed elements
 		var self = this;
 		_ret.find('img').each(function() {
-			if (this.src.indexOf(self.IconPlaceholderImg) != -1) {
-				var idx = this.src.indexOf("#");
+			// Use the attribute and not this.src, because this.src is the normalized URL,
+			// which percent-encodes characters like spaces, quotes and <> in the tooltip identifier after the #
+			var src = this.getAttribute("src");
+			if (src !== null && src.indexOf(self.IconPlaceholderImg) != -1) {
+				var idx = src.indexOf("#");
 				if (idx !== -1) {
-					$(this).replaceWith($(self.parseImageText(this.src.slice(idx + 1))));
+					$(this).replaceWith($(self.parseImageText(src.slice(idx + 1))));
 				}
 			}
 		});
