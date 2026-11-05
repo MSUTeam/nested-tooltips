@@ -149,28 +149,23 @@
 
 			case "stash":
 			case "character-screen-inventory-list-module.stash":
-				local result = ::Stash.getItemByInstanceID(_itemId);
-				if (result != null) item = result.item;
-				break;
-
 			case "world-town-screen-shop-dialog-module.stash":
+			case "tactical-combat-result-screen.stash":
 				local result = ::Stash.getItemByInstanceID(_itemId);
 				if (result != null) item = result.item;
 				break;
 
 			case "world-town-screen-shop-dialog-module.shop":
-				local stash = ::World.State.getTownScreen().getShopDialogModule().getShop().getStash();
+				local townScreen = ::World.State.getTownScreen();
+				if (townScreen == null || townScreen.getShopDialogModule() == null || townScreen.getShopDialogModule().getShop() == null)
+					break;
+				local stash = townScreen.getShopDialogModule().getShop().getStash();
 				if (stash != null)
 				{
 					local result = stash.getItemByInstanceID(_itemId);
 					if (result != null)
 						item = result.item;
 				}
-				break;
-
-			case "tactical-combat-result-screen.stash":
-				local result = ::Stash.getItemByInstanceID(_itemId);
-				if (result != null) item = result.item;
 				break;
 
 			case "tactical-combat-result-screen.found-loot":

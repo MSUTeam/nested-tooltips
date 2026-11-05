@@ -102,10 +102,10 @@ MSU.NestedTooltip = {
 			"LOCK" : null,
 		},
 		__TimerDelayGetters : {
-			"SHOW" :  function(){ return MSU.getSettingValue(MSU.ID, "showDelay")}, // default 200,
-			"HIDE" :  function(){ return MSU.getSettingValue(MSU.ID, "hideDelay")}, // default 100,
-			"LOCK" :  function(){ return MSU.getSettingValue(MSU.ID, "lockDelay")}, // default 1000,
-			"GRACE" :  function(){ return MSU.getSettingValue(MSU.ID, "graceDelay")} // default 1000,
+			"SHOW" :  function(){ return MSU.getSettingValue(MSU.ID, "showDelay")}, // default 150
+			"HIDE" :  function(){ return MSU.getSettingValue(MSU.ID, "hideDelay")}, // default 50
+			"LOCK" :  function(){ return MSU.getSettingValue(MSU.ID, "lockDelay")}, // default 500
+			"GRACE" :  function(){ return MSU.getSettingValue(MSU.ID, "graceDelay")} // default 300
 		},
 		setTimer : function(_type, _func, _delayType)
 		{
@@ -204,7 +204,7 @@ MSU.NestedTooltip = {
             var stackData = MSU.NestedTooltip.TooltipStack.peek();
             if (stackData == null) return;
             var progressImage = stackData.tooltipContainer.find(".tooltip-progress-bar");
-            if (!progressImage) return;
+            if (progressImage.length === 0) return;
 
             event.stopPropagation();
             progressImage.velocity("finish");
@@ -448,8 +448,6 @@ MSU.NestedTooltip = {
 
 		this.startTooltipLocking(tooltipContainer, _sourceContainer);
 
-		var nestedSourcesWithin = tooltipContainer.find(".msu-nested-tooltip-source");
-
 		// Add data that we'll want to pass to any nested tooltips, such as entityId
 		this.TooltipStack.setPassThroughData(_tooltipParams, true);
 		$('body').append(tooltipContainer);
@@ -649,36 +647,19 @@ MSU.NestedTooltip = {
 		var element = document.elementFromPoint(_cursorPos.left, _cursorPos.top);
 		if (!element) return false;
 
-		var elementClass = element.className || "";
-	    if (typeof elementClass === "string" &&
-	        (elementClass === "msu-tile-div" ||
-	         elementClass.indexOf(" msu-tile-div ") >= 0 ||
-	         elementClass.indexOf("msu-tile-div ") === 0 ||
-	         elementClass.indexOf(" msu-tile-div") === (elementClass.length - " msu-tile-div".length))) {
-	        return false;
-	    }
+		if (this.__hasClass(element, "msu-tile-div")) return false;
 
-		var currentElement = element;
-
-	    // Traverse up the DOM tree
-	    // No convenient checks in ES3, and using jquery is wasteful
-	    while (currentElement) {
-	        var elementClass = currentElement.className || "";
-
-	        if (typeof elementClass === "string" &&
-	            (elementClass === "msu-tooltip-source" ||
-	             elementClass.indexOf(" msu-tooltip-source ") >= 0 ||
-	             elementClass.indexOf("msu-tooltip-source ") === 0 ||
-	             elementClass.indexOf(" msu-tooltip-source") === (elementClass.length - " msu-tooltip-source".length))) {
-	            return true;
-	        }
-
-	        currentElement = currentElement.parentNode;
-	        if (currentElement && currentElement.nodeType !== 1) {
-	            currentElement = null;
-	        }
-	    }
-	    return false
+		// Traverse up the DOM tree
+		// No convenient checks in ES3, and using jquery is wasteful
+		for (var currentElement = element; currentElement && currentElement.nodeType === 1; currentElement = currentElement.parentNode) {
+			if (this.__hasClass(currentElement, "msu-tooltip-source")) return true;
+		}
+		return false;
+	},
+	__hasClass: function(_element, _class)
+	{
+		var className = _element.className;
+		return typeof className === "string" && (" " + className + " ").indexOf(" " + _class + " ") !== -1;
 	},
 	showTileTooltip: function(_currentData, _cursorPos)
 	{
@@ -707,7 +688,7 @@ MSU.NestedTooltip = {
 		if (!this.TileTooltipDiv.isLocked())
 		{
 			this.hideTileTooltip(_cursorPos);
-			this.showTileTooltip(_currentData, _cursorPos, _event);
+			this.showTileTooltip(_currentData, _cursorPos);
 		}
 	}
 }
