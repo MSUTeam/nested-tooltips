@@ -39,9 +39,19 @@
 		{
 			local arr = split(path, "/");
 			local filename = arr.pop();
-			while (filename in _table)
+			local shortName = filename;
+			while (filename in _table && arr.len() != 0)
 			{
 				filename = arr.pop() + "/" + filename;
+			}
+			if (filename in _table)
+			{
+				::logError(format("Nested Tooltips: could not register a filename for %s, because all its partial paths are taken.", path));
+				continue;
+			}
+			if (filename != shortName)
+			{
+				::logWarning(format("Nested Tooltips: \"%s\" already refers to %s, so %s must be referred to as \"%s\".", shortName, _table[shortName], path, filename));
 			}
 			_table[filename] <- path;
 		}
