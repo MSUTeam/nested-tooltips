@@ -21,5 +21,14 @@
 			::MSU.System.Tooltips.ParsedObjects.clear();
 			__original(_campaignFileName, _campaignLabel);
 		}}.saveCampaign;
+
+		// Destroy the dummy player while the world still exists, so that no stale dummy player
+		// is used after returning to the main menu.
+		q.onFinish = @(__original) function()
+		{
+			::MSU.__destroyDummyPlayer();
+			::MSU.System.Tooltips.ParsedObjects.clear();
+			__original();
+		}
 	});
 });

@@ -2,7 +2,8 @@
 ::MSU.__canCreateDummyPlayer <- false;
 ::MSU.getDummyPlayer <- function()
 {
-	if (this.DummyPlayer == null && this.__canCreateDummyPlayer)
+	// Only create it while a world exists, i.e. not in the main menu after leaving a campaign
+	if (this.DummyPlayer == null && this.__canCreateDummyPlayer && "State" in ::World && ::World.State != null)
 	{
 		this.__createDummyPlayer();
 	}
