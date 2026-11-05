@@ -79,19 +79,21 @@ local function byteToUnsigned( _b )
 
 		local text = _string.slice(match[1].begin, match[1].end);
 		local tooltipID = _string.slice(match[2].begin, match[2].end);
-		local modID = !::MSU.System.Tooltips.hasKey(myModID, tooltipID) && ::MSU.System.Tooltips.hasKey(::MSU.ID, tooltipID) ? ::MSU.ID : myModID;
+		local fullID = _prefix + tooltipID;
+		local modID = !::MSU.System.Tooltips.hasKey(myModID, fullID) && ::MSU.System.Tooltips.hasKey(::MSU.ID, fullID) ? ::MSU.ID : myModID;
 		if (text.find("$") != null)
 		{
-			local key = split(_prefix + tooltipID, "+")[0];
-			local extraData = ::MSU.System.Tooltips.getTooltip(modID, _prefix + tooltipID).Data;
+			local key = split(fullID, "+")[0];
+			local extraData = ::MSU.System.Tooltips.getTooltip(modID, fullID).Data;
 
 			local fieldLastPos = 0;
 			local fieldMatch;
 			while (fieldMatch = __dynamicFieldRegexp.capture(text, fieldLastPos))
 			{
-				local field = this.__generateNestedTextFromObj(text.slice(fieldMatch[1].begin, fieldMatch[1].end), key, extraData);
+				local field = this.__generateNestedTextFromObj(text.slice(fieldMatch[1].begin, fieldMatch[1].end), key, extraData) + "";
 				text = text.slice(0, fieldMatch[0].begin) + field + text.slice(fieldMatch[0].end);
-				fieldLastPos = fieldMatch[0].end;
+				// Continue after the inserted value, as the text has changed length
+				fieldLastPos = fieldMatch[0].begin + field.len();
 			}
 		}
 
@@ -109,7 +111,7 @@ local function byteToUnsigned( _b )
 		// so that any string manipulation like .toupper() does not break them.
 		// We then decode these on the JS side.
 		tag = this.encodeString(tag);
-		ret += format("[%s=%s]%s[/%s]", tag, this.encodeString(format("%s.%s", modID, _prefix + tooltipID)), text, tag);
+		ret += format("[%s=%s]%s[/%s]", tag, this.encodeString(format("%s.%s", modID, fullID)), text, tag);
 		lastPos = match[0].end;
 	}
 
