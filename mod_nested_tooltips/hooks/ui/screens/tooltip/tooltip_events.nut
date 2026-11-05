@@ -1,7 +1,8 @@
 ::NestedTooltips.MH.hook("scripts/ui/screens/tooltip/tooltip_events", function(q) {
 	q.general_queryEntityNestedTooltipData <- function( _data )
 	{
-		return ::Tactical.getEntityByID(_data.entityId).getTooltip();
+		local entity = ::Tactical.getEntityByID(_data.entityId);
+		return entity == null ? null : entity.getTooltip();
 	}
 
 	q.general_querySkillNestedTooltipData <- function( _data )

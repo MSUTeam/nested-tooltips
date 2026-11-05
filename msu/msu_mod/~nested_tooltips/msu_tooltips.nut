@@ -72,7 +72,13 @@
 		_data = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData);
 		// It's not actually filename that's passed here, but that's what the key is called
 		// in the return from the parse function above.
+		// The key is missing if ParsedObjects was cleared since the string was parsed,
+		// and the weakref is null if the object no longer exists
+		if (!(_data.filename in ::MSU.System.Tooltips.ParsedObjects))
+			return null;
 		local obj = ::MSU.System.Tooltips.ParsedObjects[_data.filename];
+		if (obj == null)
+			return null;
 
 		local ret;
 		if ("func" in _data)

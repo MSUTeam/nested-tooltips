@@ -74,6 +74,9 @@ local ImageKeywordMap = {};
 
 ::MSU.Class.TooltipsSystem.parseExtraDataForNestedTooltip <- function( _extraData )
 {
+	if (_extraData == null)
+		return { filename = null };
+
 	local arr = split(_extraData, ",");
 	local ret = {
 		filename = arr[0]
