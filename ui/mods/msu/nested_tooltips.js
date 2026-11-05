@@ -136,13 +136,18 @@ MSU.NestedTooltip = {
 		        elementId : this.dataset.msuNestedId,
 		        modId : this.dataset.msuNestedMod
 		    };
-		    MSU.NestedTooltip.bindToElement($element, data);
+		    // Don't rebind a link whose tooltip is open, as that would wipe its msu-nested data
+		    // and make onSourceEnter re-create the tooltip
+		    if ($element.data("msu-nested") === undefined)
+		    	MSU.NestedTooltip.bindToElement($element, data);
 		    MSU.NestedTooltip.Events.onSourceEnter(event);
 		},
 
 		onNestedSourceLeave : function(event) {
 			var $element = $(event.currentTarget);
-		    MSU.NestedTooltip.unbindFromElement($element);
+		    // Keep the binding while its tooltip is open, so that returning to the link keeps the tooltip
+		    if ($element.data("msu-nested") === undefined)
+		    	MSU.NestedTooltip.unbindFromElement($element);
 		    MSU.NestedTooltip.Events.onSourceLeave(event);
 		},
 
