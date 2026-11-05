@@ -41,21 +41,41 @@
 			{
 				dummyContainer.unequip(existingItem);
 			}
-			dummyContainer.equip(item);
 
-			foreach (s in item.getSkills())
+			// Always restore the dummy player's items, even if equipping or the tooltip throws,
+			// so that the item doesn't stay equipped on the dummy player.
+			local error;
+			try
 			{
-				if (s.getID() == skillId)
+				if (dummyContainer.equip(item))
 				{
-					ret = s.__MSU_getNestedTooltipSafe();
-					break;
+					foreach (s in item.getSkills())
+					{
+						if (s.getID() == skillId)
+						{
+							ret = s.__MSU_getNestedTooltipSafe();
+							break;
+						}
+					}
 				}
 			}
+			catch (_error)
+			{
+				error = _error;
+			}
 
-			dummyContainer.unequip(item);
+			if (::MSU.isEqual(item.getContainer(), dummyContainer))
+			{
+				dummyContainer.unequip(item);
+			}
 			if (existingItem != null)
 			{
 				dummyContainer.equip(existingItem);
+			}
+
+			if (error != null)
+			{
+				throw error;
 			}
 		}
 
