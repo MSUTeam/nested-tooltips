@@ -54,7 +54,7 @@ MSU.NestedTooltip = {
 	        while (this.stack.length > 0) {
 	            this.pop();
 	        }
-	        $(".ui-control-tooltip-module").remove(); //full error handling;
+	        $(".msu-nested-tooltip").remove(); //full error handling;
 	    },
 
 	    isEmpty: function() {
@@ -182,7 +182,7 @@ MSU.NestedTooltip = {
         	    $element.hide();
         	    return;
         	}
-    		$(".ui-control-tooltip-module").not($element).addClass("msu-nested-tooltip-not-hovered");
+    		$(".msu-nested-tooltip").not($element).addClass("msu-nested-tooltip-not-hovered");
     		$element.removeClass("msu-nested-tooltip-not-hovered");
         },
 
@@ -257,14 +257,14 @@ MSU.NestedTooltip = {
                 .on("mouseenter.msu-tooltip", ".msu-nested-tooltip-source", this.onNestedSourceEnter)
 
                 // entering tooltip containers
-                .on("mouseleave.msu-tooltip", ".ui-control-tooltip-module", this.onTooltipLeave)
-                .on("mouseenter.msu-tooltip", ".ui-control-tooltip-module", this.onTooltipEnter)
+                .on("mouseleave.msu-tooltip", ".msu-nested-tooltip", this.onTooltipLeave)
+                .on("mouseenter.msu-tooltip", ".msu-nested-tooltip", this.onTooltipEnter)
 
                 // Lock handling
                 .on("keydown.msu-tooltip", this.onLockRequest)
 
                 // Click handling
-                .on("mousedown.msu-tooltip", ".ui-control-tooltip-module", this.onTooltipLeftClick);
+                .on("mousedown.msu-tooltip", ".msu-nested-tooltip", this.onTooltipLeftClick);
 
             // this one we need to run outside
             document.addEventListener("mousedown", this.onTooltipRightClick, {"passive": true, "capture" : true});
