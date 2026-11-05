@@ -35,7 +35,7 @@
 			{
 				foreach (i, entry in ret)
 				{
-					if (!("text" in entry)) continue;
+					if (!("text" in entry) || !("id" in entry) || !("icon" in entry)) continue;
 
 					if (entry.id == 4 && entry.icon == "ui/icons/regular_damage.png")
 					{
@@ -58,6 +58,12 @@
 		}
 		catch (error)
 		{
+			// Don't leave the fake item on the skill, as skill objects used for nested tooltips are cached
+			if (fakeItem != null)
+			{
+				this.setItem(null);
+			}
+
 			::NestedTooltips.Mod.Debug.printWarning(format("Could not fetch nested tooltip for skill %s, so returning base skill tooltip. Error: %s", this.getID(), error));
 			return this.isActive() ? this.skill.getDefaultUtilityTooltip() : this.skill.getTooltip();
 		}
