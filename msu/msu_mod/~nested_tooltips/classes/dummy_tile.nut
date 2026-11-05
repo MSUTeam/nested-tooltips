@@ -14,6 +14,20 @@
 	static IsVisibleForPlayer = false;
 	static IsCorpseSpawned = false;
 	static IsOccupiedByActor = false;
+	static IsEmpty = false; // the dummy player stands on it
+	static X = 0;
+	static Y = 0;
+	static Coords = { X = 0, Y = 0 };
+	static SquareCoords = { X = 0, Y = 0 };
+	// Mimics the tile properties object, including its custom data functions
+	static Properties = {
+		Effect = null,
+		IsMarkedForImpact = false,
+		function has( _key ) { return false; },
+		function get( _key ) { return null; },
+		function set( _key, _value ) {},
+		function remove( _key ) {}
+	};
 
 	function hasZoneOfControlOtherThan( ... )
 	{
@@ -58,6 +72,35 @@
 	function isSameTileAs( _tile )
 	{
 		return false;
+	}
+
+	function getDistanceTo( ... )
+	{
+		return 0;
+	}
+
+	function getDirectionTo( ... )
+	{
+		return 0;
+	}
+
+	function getDirection8To( ... )
+	{
+		return 0;
+	}
+
+	function getNextTile( ... )
+	{
+		return null;
+	}
+
+	function getEntity()
+	{
+		return ::MSU.DummyPlayer;
+	}
+
+	function addVisibilityForFaction( ... )
+	{
 	}
 };
 
