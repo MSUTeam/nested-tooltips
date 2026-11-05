@@ -19,7 +19,7 @@ MSU.NestedTooltip = {
 	    validateStackData : function(data) {
 	    	var keys = ["sourceContainer", "tooltipContainer", "tooltipParams", "isLocked"];
 	    	keys.forEach(function(_key){
-	    		if (!(_key in data)) throw "Missing key: " + key;
+	    		if (!(_key in data)) throw "Missing key: " + _key;
 	    	})
 	    },
 	    push: function(nestedData) {
@@ -391,7 +391,7 @@ MSU.NestedTooltip = {
 			return;
 		}
 		// ghetto clone to get new ref
-		cloned_tooltipParams = JSON.parse(JSON.stringify(tooltipParams));
+		var cloned_tooltipParams = JSON.parse(JSON.stringify(tooltipParams));
 
 		// check if this is within the same chain of nested tooltips, or if we need to clear the stack and start a new chain
 		while (!this.TooltipStack.isEmpty() && this.TooltipStack.peek().tooltipContainer.find(_sourceContainer).length === 0) {
