@@ -600,7 +600,16 @@ MSU.NestedTooltip = {
 		{
 			ret += String.fromCharCode(parseInt(_str.slice(i, i + 3), 10));
 		}
-		return ret;
+		// The numbers are the bytes of the UTF-8 encoded Squirrel string, so decode non-ASCII characters from them.
+		// escape() turns each byte into %XX, which decodeURIComponent then decodes as UTF-8.
+		try
+		{
+			return decodeURIComponent(escape(ret));
+		}
+		catch (e) // invalid UTF-8
+		{
+			return ret;
+		}
 	},
 	parseEncodedText : function (_text)
 	{
