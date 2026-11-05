@@ -15,10 +15,11 @@
 			__original(_campaignFileName);
 		}}.loadCampaign;
 
+		// Don't clear ParsedObjects here: saving doesn't destroy any objects (and the weakrefs don't affect saving),
+		// and clearing would break Obj links that are still shown, e.g. after an autosave.
 		q.saveCampaign = @(__original) { function saveCampaign( _campaignFileName, _campaignLabel = null )
 		{
 			::MSU.__destroyDummyPlayer();
-			::MSU.System.Tooltips.ParsedObjects.clear();
 			__original(_campaignFileName, _campaignLabel);
 		}}.saveCampaign;
 
