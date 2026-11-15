@@ -273,6 +273,10 @@ MSU.NestedTooltip = {
 
             // this one we need to run outside
             document.addEventListener("mousedown", this.onTooltipRightClick, {"passive": true, "capture" : true});
+
+            MSU.NestedTooltip.TileTooltipDiv.container.on("mousemove.msu-tooltip", function(_event) {
+            	MSU.NestedTooltip.onTileDivMouseMove(_event);
+            });
         }
 	},
 	TileTooltipDiv : {
@@ -667,6 +671,53 @@ MSU.NestedTooltip = {
 			if (this.__hasClass(currentElement, "msu-tooltip-source")) return true;
 		}
 		return false;
+	},
+	// A tooltip source covered by the tile div at the given screen position, or null.
+	// Purely geometric: hiding the tile div for an elementFromPoint check would change what the
+	// mouse hovers, and the resulting leave/enter and tile hover events close locked tooltips early.
+	getTooltipSourceBelowTileDiv: function(_x, _y)
+	{
+		var tileDiv = this.TileTooltipDiv.container.get(0);
+		var ret = null;
+		$(".msu-tooltip-source").each(function()
+		{
+			// Sources inside tooltips are drawn above the tile div and get their own mouse events
+			if (this === tileDiv || $(this).closest(".msu-nested-tooltip").length !== 0)
+				return;
+
+			var rect = this.getBoundingClientRect();
+			if (rect.width === 0 || _x < rect.left || _x > rect.right || _y < rect.top || _y > rect.bottom)
+				return;
+
+			var style = window.getComputedStyle(this);
+			if (style.visibility === "hidden" || style.pointerEvents === "none")
+				return;
+
+			ret = this;
+			return false;
+		});
+		return ret;
+	},
+	// A locked tile tooltip keeps the tile div expanded around the tile, and the div covers other tooltip
+	// sources there, e.g. labels drawn over the map. Those would get no mouse events until the tile tooltip
+	// closes. When the mouse moves onto such a source, close the tile tooltip and enter the source.
+	onTileDivMouseMove: function(_event)
+	{
+		var tileDiv = this.TileTooltipDiv;
+		if (!tileDiv.isLocked())
+			return;
+
+		var source = this.getTooltipSourceBelowTileDiv(_event.clientX, _event.clientY);
+		if (source === null)
+			return;
+
+		this.Events.cancelTimer("SHOW");
+		this.Events.cancelTimer("HIDE");
+		this.TooltipStack.clear();
+		tileDiv.shrink();
+		tileDiv.unbind();
+		// All mouseenter handlers, so that the source's own hover handling runs as well
+		$(source).trigger("mouseenter");
 	},
 	__hasClass: function(_element, _class)
 	{
