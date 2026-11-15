@@ -678,6 +678,13 @@ MSU.NestedTooltip = {
 		if (this.hasTooltipSourceBeneathCursor(_cursorPos)) {
     		return;
 		}
+		// While a tooltip is locked, the HIDE timer (with the GRACE delay after leaving its source) decides
+		// when it closes. Showing the tile tooltip would close it at once (updateStack) or after the show
+		// delay (entering the tile div starts a new chain), e.g. when the mouse crosses the map on its way
+		// from a source to its tooltip. The tile tooltip shows on the next mouse movement after that.
+		if (this.TooltipStack.isLocked()) {
+			return;
+		}
 		this.updateStack();
 		this.TileTooltipDiv.bind(_currentData);
 		this.TileTooltipDiv.cursorPos = _cursorPos;
