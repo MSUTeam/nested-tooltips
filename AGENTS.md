@@ -6,7 +6,7 @@ Last review: 2026-11-05, `development` at a732552 (v0.5.4). Fixes are on branch 
 
 ## Layout
 - `msu/` extends MSU classes in place (to be merged into MSU later); paths mirror MSU's:
-  - `msu/systems/tooltips/~nested_tooltips/`: TooltipsSystem and TooltipsModAddon additions (`parseString`, `getTooltipAndData`, ...).
+  - `msu/systems/tooltips/~nested_tooltips/`: TooltipsSystem and TooltipsModAddon additions (`parseString`, ...).
   - `msu/msu_mod/~nested_tooltips/`: tooltip types, settings, keybind, `::MSU.NestedTooltips`.
   - `msu/utils/~nested_tooltips/`: the dummy player and `regexReplace`.
 - `mod_nested_tooltips/hooks/`: vanilla hooks, included via `::IO.enumerateFiles` in `scripts/!mods_preload/mod_nested_tooltips.nut`.
@@ -23,7 +23,7 @@ Last review: 2026-11-05, `development` at a732552 (v0.5.4). Fixes are on branch 
 - Tags and identifiers are encoded as 3-digit byte numbers (safe from `toupper()` etc.); JS decodes them as UTF-8 in `parseEncodedText`. Link text stays plain.
 - `removeAllFromString` strips links to their text; `getArticle`/`getArticleCapitalized` use it.
 - `parseObject(obj)` keys are `obj + ""` (`(table : 0x...)`), stored as weakrefs in `ParsedObjects`.
-- `getTooltip(modID, id)` returns the tooltip object; `getTooltipAndData` returns `{ Tooltip, Data }`. Before `fix-review-findings`, `getTooltip` returned the table; Reforged's `fix-nested-tooltips-get-tooltip` branch matches the new API, so release both together.
+- The overwritten `getTooltip(modID, id)` returns `{ Tooltip, Data }`, not MSU's tooltip object; mods call `getTooltip(...).Tooltip`. Restoring MSU's return value (with a `getTooltipAndData` for the table, `d656535`) was reverted for 0.5.5 to stay compatible with the current Reforged release. It comes back in a later breaking release together with Reforged's `fix-nested-tooltips-get-tooltip` branch.
 
 ## Dummy player and cached objects
 - `::MSU.getDummyPlayer()` lazily creates a `player` in roster `NestedTooltipsRoster` (hasPerk/hasSprite/getTile/onAppearanceChanged overridden), only after the first world init and while a world state exists. In the main menu it returns null.
