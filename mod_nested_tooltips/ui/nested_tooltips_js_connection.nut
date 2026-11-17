@@ -24,6 +24,34 @@ this.nested_tooltips_js_connection <- ::inherit("scripts/mods/msu/js_connection"
 		this.m.JSHandle.asyncCall("setTooltipImageKeywords", _table);
 	}
 
+	function onTooltipShown( _data )
+	{
+		this.callTooltipCallback(_data, "OnShow");
+	}
+
+	function onTooltipHidden( _data )
+	{
+		this.callTooltipCallback(_data, "OnHide");
+	}
+
+	// _data are the query parameters of the tooltip (modId, elementId, ...), see onQueryMSUTooltipData
+	function callTooltipCallback( _data, _key )
+	{
+		try
+		{
+			local ret = ::MSU.System.Tooltips.getTooltip(_data.modId, _data.elementId);
+			local callback = ret.Tooltip[_key];
+			if (callback == null)
+				return;
+			_data.ExtraData <- ret.Data;
+			callback(_data);
+		}
+		catch (_error)
+		{
+			::logError(format("Nested Tooltips Framework: %s of tooltip %s failed: %s", _key, _data.elementId + "", _error + ""));
+		}
+	}
+
 	function queryZoomLevel()
 	{
 		local ret = {

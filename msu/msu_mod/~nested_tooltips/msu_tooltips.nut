@@ -1,3 +1,7 @@
+// msu/systems/tooltips/abstract_tooltip~nested_tooltips.nut must load between MSU's abstract tooltip and its subclasses
+if (!("setOnShow" in ::MSU.Class.BasicTooltip) || !("setOnShow" in ::MSU.Class.CustomTooltip))
+	::logError("Nested Tooltips Framework: MSU's tooltip load order changed, so tooltip OnShow/OnHide callbacks are unavailable.");
+
 ::MSU.Mod.Tooltips.setTooltips({
 	CharacterStats = ::MSU.Class.CustomTooltip(@(_data) ::TooltipEvents.general_queryUIElementTooltipData(null, "character-stats." + _data.ExtraData, null)),
 	Perk = ::MSU.Class.CustomTooltip(function(_data) {

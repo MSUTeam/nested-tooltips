@@ -24,6 +24,19 @@ NestedTooltipsJSConnection.prototype.queryZoomLevel = function (_callback)
 	SQ.call(this.mSQHandle, "queryZoomLevel", null, _callback);
 }
 
+// Calls the OnShow/OnHide callback of the Squirrel tooltip with these query parameters
+NestedTooltipsJSConnection.prototype.notifyTooltipShown = function (_tooltipParams)
+{
+	if (this.mSQHandle !== null)
+		SQ.call(this.mSQHandle, "onTooltipShown", _tooltipParams);
+}
+
+NestedTooltipsJSConnection.prototype.notifyTooltipHidden = function (_tooltipParams)
+{
+	if (this.mSQHandle !== null)
+		SQ.call(this.mSQHandle, "onTooltipHidden", _tooltipParams);
+}
+
 NestedTooltipsJSConnection.prototype.updateNestedTooltipTextStyle = function (_styleString)
 {
 	MSU.NestedTooltip.TextStyle = _styleString;
