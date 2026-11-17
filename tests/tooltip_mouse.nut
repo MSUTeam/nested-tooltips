@@ -34,6 +34,28 @@ local SkillSelector = ".skills-container .l-skill.msu-tooltip-source";
 	::BBTest.assertEq(1, ::BBTest.LastJSResult, "the locked skill tooltip closed while the mouse moved up to it");
 }, { Phase = ::BBTest.Phase.Tactical });
 
+// Every tile change makes vanilla's tile hover leave the tile div again; that must not restart the grace delay,
+// or the locked tile tooltip stays open for as long as the mouse keeps moving over the map.
+::BBTest.add("locked tile tooltip closes while the mouse keeps moving", function() {
+	::getModSetting("mod_msu", "graceDelay").set(800);
+	yield ::BBTest.evalJS("({ x: window.innerWidth / 2, y: window.innerHeight / 2 })");
+	local center = ::BBTest.LastJSResult;
+	// A tooltip still open from an earlier test holds tile tooltips back until it closes; then a movement shows one
+	yield ::BBTest.moveMouse(center.x, center.y, 200);
+	yield ::BBTest.waitForJS("MSU.NestedTooltip.TooltipStack.isEmpty()", 3000);
+	yield ::BBTest.moveMouse(center.x + 40, center.y + 25);
+	yield ::BBTest.waitForJS("MSU.NestedTooltip.TileTooltipDiv.isLocked()", 4000);
+	local openJS = "(function(){ var r = MSU.NestedTooltip.TileTooltipDiv.container.get(0).getBoundingClientRect(); return MSU.NestedTooltip.TooltipStack.isEmpty() ? '' : (r.left + ',' + r.top); })()";
+	yield ::BBTest.evalJS(openJS);
+	local original = ::BBTest.LastJSResult;
+
+	// About 1.8 s across many tiles, away from the tooltip (drawn right of and below the cursor), without pausing
+	foreach (p in [[-220, -160], [-320, -40], [-200, 80], [-340, -180], [-160, -60], [-300, 60]])
+		yield ::BBTest.moveMouse(center.x + p[0], center.y + p[1], 300);
+	yield ::BBTest.evalJS(openJS);
+	::BBTest.assert(::BBTest.LastJSResult != original, "the locked tile tooltip stayed open while the mouse kept moving");
+}, { Phase = ::BBTest.Phase.Tactical });
+
 ::BBTest.add("locked tooltip respects the grace delay when leaving onto the map", function() {
 	::getModSetting("mod_msu", "graceDelay").set(800);
 	local ctx = {};

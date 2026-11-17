@@ -117,7 +117,16 @@ MSU.NestedTooltip = {
 			if (this.__Timers[_type] != null) {
 				clearTimeout(this.__Timers[_type]);
 			}
-			this.__Timers[_type] = setTimeout(_func, this.__TimerDelayGetters[_delayType]());
+			// Reset to null when it fires, so that isTimerPending is false afterwards
+			var self = this;
+			this.__Timers[_type] = setTimeout(function() {
+				self.__Timers[_type] = null;
+				_func();
+			}, this.__TimerDelayGetters[_delayType]());
+		},
+		isTimerPending : function(_type)
+		{
+			return this.__Timers[_type] != null;
 		},
 		cancelTimer : function(_type)
 		{
@@ -170,11 +179,16 @@ MSU.NestedTooltip = {
 
         onSourceLeave : function(event) {
         	MSU.NestedTooltip.Events.cancelTimer("SHOW");
-        	MSU.NestedTooltip.Events.cancelTimer("HIDE");
         	if (MSU.NestedTooltip.TooltipStack.isLocked()) {
+        		// A pending HIDE timer means no source was entered since the last leave (entering one cancels it).
+        		// Vanilla's tile hover leaves the tile div on every tile change (hideTileTooltip), so restarting the
+        		// timer here would keep a locked tooltip open for as long as the mouse keeps moving over the map.
+        		if (MSU.NestedTooltip.Events.isTimerPending("HIDE"))
+        			return;
         		MSU.NestedTooltip.Events.setTimer("HIDE", MSU.NestedTooltip.updateStack.bind(MSU.NestedTooltip), "GRACE");
         	}
         	else {
+        		MSU.NestedTooltip.Events.cancelTimer("HIDE");
         		MSU.NestedTooltip.Events.setTimer("HIDE", MSU.NestedTooltip.updateStack.bind(MSU.NestedTooltip));
         	}
         },
