@@ -1,3 +1,29 @@
+local entityTooltip = ::MSU.Class.CustomTooltip(function( _data ) {
+	_data = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData);
+	_data.entityId <- _data.filename.tointeger();
+	local ret = ::TooltipEvents.general_queryEntityNestedTooltipData(_data);
+	if (ret != null)
+		ret.insert(0, { contentType = "entity" });
+	return ret;
+});
+
+// msu/systems/tooltips/abstract_tooltip~nested_tooltips.nut must load between MSU's abstract tooltip and its subclasses
+if ("setOnShow" in ::MSU.Class.BasicTooltip && "setOnShow" in ::MSU.Class.CustomTooltip)
+{
+	// Point out the entity on the map while its tooltip is open, like vanilla's turn sequence bar
+	local setEntityArrow = function( _data, _show )
+	{
+		if ("State" in ::Tactical && ::Tactical.State != null)
+			::Tactical.State.nestedTooltips_setEntityArrow(_data, _show);
+	};
+	entityTooltip.setOnShow(@(_data) setEntityArrow(_data, true));
+	entityTooltip.setOnHide(@(_data) setEntityArrow(_data, false));
+}
+else
+{
+	::logError("Nested Tooltips Framework: MSU's tooltip load order changed, so tooltip OnShow/OnHide callbacks are unavailable.");
+}
+
 ::MSU.Mod.Tooltips.setTooltips({
 	CharacterStats = ::MSU.Class.CustomTooltip(@(_data) ::TooltipEvents.general_queryUIElementTooltipData(null, "character-stats." + _data.ExtraData, null)),
 	Perk = ::MSU.Class.CustomTooltip(function(_data) {
@@ -52,14 +78,7 @@
 			ret.insert(0, { contentType = "ui-item" });
 		return ret;
 	}),
-	Entity = ::MSU.Class.CustomTooltip(function( _data ) {
-		_data = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData);
-		_data.entityId <- _data.filename.tointeger();
-		local ret = ::TooltipEvents.general_queryEntityNestedTooltipData(_data);
-		if (ret != null)
-			ret.insert(0, { contentType = "entity" });
-		return ret;
-	}),
+	Entity = entityTooltip,
 	WorldEntity = ::MSU.Class.CustomTooltip(function( _data ) {
 		// The actual ExtraData is the entity id. It's just called filename because of the parse function
 		local entity = ::World.getEntityByID(::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData).filename.tointeger());

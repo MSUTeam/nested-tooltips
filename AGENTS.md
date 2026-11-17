@@ -7,6 +7,7 @@ Last review: 2026-11-05, `development` at a732552 (v0.5.4). Fixes are on branch 
 ## Layout
 - `msu/` extends MSU classes in place (to be merged into MSU later); paths mirror MSU's:
   - `msu/systems/tooltips/~nested_tooltips/`: TooltipsSystem and TooltipsModAddon additions (`parseString`, ...).
+  - `msu/systems/tooltips/abstract_tooltip~nested_tooltips.nut`: `OnShow`/`OnHide` callbacks on `::MSU.Class.Tooltip`. Squirrel copies base members into a subclass at its declaration, so this must load between MSU's `abstract_tooltip` and `tooltips/basic_tooltip`/`custom_tooltip`; MSU's `msu/systems/tooltips/load.nut` includes the folder via `::IO.enumerateFiles` in name order, and the filename sorts there. `msu_tooltips.nut` logs an error if that order breaks.
   - `msu/msu_mod/~nested_tooltips/`: tooltip types, settings, keybind, `::MSU.NestedTooltips`.
   - `msu/utils/~nested_tooltips/`: the dummy player and `regexReplace`.
 - `mod_nested_tooltips/hooks/`: vanilla hooks, included via `::IO.enumerateFiles` in `scripts/!mods_preload/mod_nested_tooltips.nut`.
@@ -16,11 +17,13 @@ Last review: 2026-11-05, `development` at a732552 (v0.5.4). Fixes are on branch 
 ## Tooltip syntax (Squirrel `Mod.Tooltips.parseString`)
 - `[link text|TooltipID]`: `TooltipID` is a key in the calling mod's `Mod.Tooltips.setTooltips` table, falling back to MSU's. Anything after `+` is extra data (`_data.ExtraData`).
 - Built-in IDs (`msu_tooltips.nut`): `Perk+<perk filename>`, `Skill+<skill filename>`, `Item+<item filename>`, `Entity+<id>`, `WorldEntity+<id>`, `CharacterStats+<stat>`, `Obj+<parseObject(obj) key>` (optional `func:<name>` replaces `getTooltip`), `Tooltip+<parseTooltip(array)>`.
-- Extra data is `filename,key:value,...` (`parseExtraDataForNestedTooltip`); keys `entityId` (`default` = the root tooltip's), `itemId`, `itemOwner`, `func`, `contentType`, `cssClass`. Values can't contain `,` or `:`.
+- Extra data is `filename,key:value,...` (`parseExtraDataForNestedTooltip`); keys `entityId` (`default` = the root tooltip's), `itemId`, `itemOwner`, `func`, `contentType`, `cssClass`, `showArrow` (`Entity+` only, `false` = no arrow). Values can't contain `,` or `:`.
 - Filenames are script filenames without path (`Skill+rotation`); on a collision the later script needs a partial path (`actives/rotation`). Collisions are logged at preload; none in vanilla, Reforged or Legends.
 - `Img/` at the start of the link text makes an image link: `[Img/gfx/ui/icons/x.png|Perk+perk_x]`.
 - `$ $` in the link text inserts the object's `Name`, `$Field.func()$` a field with calls. Only `Perk`, `Skill`, `Item` (or a mod's `generateNestedTextFromObjCallback`); fields other than `Perk` throw before the first world init.
 - Tags and identifiers are encoded as 3-digit byte numbers (safe from `toupper()` etc.); JS decodes them as UTF-8 in `parseEncodedText`. Link text stays plain.
+- Any MSU tooltip can call `setOnShow(fn(_data))`/`setOnHide(fn(_data))` (chainable). `_data` are the tooltip's query params plus `ExtraData`. `onQueryMSUTooltipData` then appends `{ contentType = "msu-nested-notify-show-hide" }` (vanilla's builder skips entries with a `contentType` silently); JS `createTooltip` sees it and calls `NestedTooltipsJSConnection.onTooltipShown`, `cleanupTooltip` calls `onTooltipHidden`. So the callbacks follow the tooltip's life in the stack (after `showDelay`, through grace and while locked and hovered).
+- `Entity+` uses them to show the vanilla arrow over the entity in tactical (vanilla's turn sequence bar rule: alive actor). Only the innermost open entity tooltip has the arrow: `tactical_state.m.NestedTooltips_EntityArrowStack` lists the open ones in opening order (it mirrors the JS stack, as the notifications arrive in order); closing the innermost moves the arrow to the next. The logic is in the `tactical_state` hook (`nestedTooltips_setEntityArrow`), next to vanilla's turn bar arrow handling, so each combat starts with an empty list; the `Entity` callbacks do nothing without a `::Tactical.State`. `showArrow:false` in the extra data opens the tooltip without an arrow and without touching the list. Leaving a turn bar portrait of the same entity hides the arrow too (same sprite).
 - `removeAllFromString` strips links to their text; `getArticle`/`getArticleCapitalized` use it.
 - `parseObject(obj)` keys are `obj + ""` (`(table : 0x...)`), stored as weakrefs in `ParsedObjects`.
 - The overwritten `getTooltip(modID, id)` returns `{ Tooltip, Data }`, not MSU's tooltip object; mods call `getTooltip(...).Tooltip`. Restoring MSU's return value (with a `getTooltipAndData` for the table, `d656535`) was reverted for 0.5.5 to stay compatible with the current Reforged release. It comes back in a later breaking release together with Reforged's `fix-nested-tooltips-get-tooltip` branch.
@@ -43,6 +46,7 @@ Last review: 2026-11-05, `development` at a732552 (v0.5.4). Fixes are on branch 
 - Icons with an image link are swapped for a placeholder png with the link after `#` in `src`, replaced after vanilla builds the tooltip (read with `getAttribute("src")`). The png exists under `gfx/mods/mod_nested_tooltips/` and `gfx/ui/items/mods/mod_nested_tooltips/` (entries with `useItemPath` use `Path.ITEMS`).
 
 ## Tests and in-game checks
+`tests/entity_arrow.nut`: the callbacks exist on all tooltip classes (load order), only the innermost `Entity+` tooltip has the arrow (A > B > A chain, `showArrow:false`), and hovering a test `Entity+` source with the real mouse shows and hides the arrow.
 `tests/tooltip_mouse.nut` (tactical, moves the real mouse; don't touch it meanwhile): a locked skill tooltip survives moving up onto it across the map, a locked tile tooltip closes while the mouse keeps moving, leaving onto the map respects `graceDelay`, a tile tooltip shows afterwards. Manual checks after UI changes:
 - Lock a tooltip, open a nested link, move back onto that link: no flicker or lock restart. A nested link in a tile tooltip: closing it keeps the tile tooltip.
 - Left/right click closing, dimming of non-hovered tooltips, world event screen titles, the perk unlock popup.
