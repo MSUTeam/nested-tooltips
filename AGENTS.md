@@ -46,6 +46,7 @@ Last review: 2026-11-05, `development` at a732552 (v0.5.4). Fixes are on branch 
 - Icons with an image link are swapped for a placeholder png with the link after `#` in `src`, replaced after vanilla builds the tooltip (read with `getAttribute("src")`). The png exists under `gfx/mods/mod_nested_tooltips/` and `gfx/ui/items/mods/mod_nested_tooltips/` (entries with `useItemPath` use `Path.ITEMS`).
 
 ## Tests and in-game checks
+`tests/entity_arrow.nut`: the callbacks exist on all tooltip classes (load order), only the innermost `Entity+` tooltip has the arrow (A > B > A chain, `showArrow:false`), and hovering a test `Entity+` source with the real mouse shows and hides the arrow.
 `tests/tooltip_mouse.nut` (tactical, moves the real mouse; don't touch it meanwhile): a locked skill tooltip survives moving up onto it across the map, a locked tile tooltip closes while the mouse keeps moving, leaving onto the map respects `graceDelay`, a tile tooltip shows afterwards. Manual checks after UI changes:
 - Lock a tooltip, open a nested link, move back onto that link: no flicker or lock restart. A nested link in a tile tooltip: closing it keeps the tile tooltip.
 - Left/right click closing, dimming of non-hovered tooltips, world event screen titles, the perk unlock popup.
