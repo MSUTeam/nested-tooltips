@@ -11,8 +11,13 @@ local entityTooltip = ::MSU.Class.CustomTooltip(function( _data ) {
 if ("setOnShow" in ::MSU.Class.BasicTooltip && "setOnShow" in ::MSU.Class.CustomTooltip)
 {
 	// Point out the entity on the map while its tooltip is open, like vanilla's turn sequence bar
-	entityTooltip.setOnShow(@(_data) ::MSU.NestedTooltips.setEntityArrow(_data, true));
-	entityTooltip.setOnHide(@(_data) ::MSU.NestedTooltips.setEntityArrow(_data, false));
+	local setEntityArrow = function( _data, _show )
+	{
+		if ("State" in ::Tactical && ::Tactical.State != null)
+			::Tactical.State.nestedTooltips_setEntityArrow(_data, _show);
+	};
+	entityTooltip.setOnShow(@(_data) setEntityArrow(_data, true));
+	entityTooltip.setOnHide(@(_data) setEntityArrow(_data, false));
 }
 else
 {

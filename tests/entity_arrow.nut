@@ -61,7 +61,7 @@ local function expectArrows( _ctx, _a, _b, _step )
 	yield expectArrows(ctx, true, false, "back to A");
 	hide(ctx.A, ",cssClass:x");
 	yield expectArrows(ctx, false, false, "all closed");
-	::BBTest.assertEq(0, ::MSU.NestedTooltips.EntityArrowStack.len());
+	::BBTest.assertEq(0, ::Tactical.State.m.NestedTooltips_EntityArrowStack.len());
 
 	// showArrow:false: no arrow and the outer entity keeps its arrow
 	show(ctx.A);
@@ -74,7 +74,7 @@ local function expectArrows( _ctx, _a, _b, _step )
 	// Unknown entity: no error, nothing left behind
 	::NestedTooltips.UI.JSConnection.onTooltipShown({ modId = ::MSU.ID, elementId = "Entity+999999" });
 	::NestedTooltips.UI.JSConnection.onTooltipHidden({ modId = ::MSU.ID, elementId = "Entity+999999" });
-	::BBTest.assertEq(0, ::MSU.NestedTooltips.EntityArrowStack.len());
+	::BBTest.assertEq(0, ::Tactical.State.m.NestedTooltips_EntityArrowStack.len());
 }, { Phase = ::BBTest.Phase.Tactical });
 
 // Hover a real Entity+ tooltip source with the mouse: the arrow shows with the tooltip and hides when it closes
