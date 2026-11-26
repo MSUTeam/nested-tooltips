@@ -1,12 +1,12 @@
 ::MSU.QueueBucket.VeryLate.push(function() {
 	::MSU.MH.hook("scripts/states/world_state", function(q) {
-		q.init = @(__original) function()
+		q.init = @(__original) { function init()
 		{
 			::MSU.__destroyDummyPlayer();
 			::MSU.__canCreateDummyPlayer = true;
 			::MSU.System.Tooltips.ParsedObjects.clear();
 			__original();
-		}
+		}}.init;
 
 		q.loadCampaign = @(__original) { function loadCampaign( _campaignFileName )
 		{
@@ -25,11 +25,11 @@
 
 		// Destroy the dummy player while the world still exists, so that no stale dummy player
 		// is used after returning to the main menu.
-		q.onFinish = @(__original) function()
+		q.onFinish = @(__original) { function onFinish()
 		{
 			::MSU.__destroyDummyPlayer();
 			::MSU.System.Tooltips.ParsedObjects.clear();
 			__original();
-		}
+		}}.onFinish;
 	});
 });

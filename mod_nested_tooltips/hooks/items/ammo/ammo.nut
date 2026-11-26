@@ -1,5 +1,5 @@
 ::NestedTooltips.MH.hook("scripts/items/ammo/ammo", function(q) {
-	q.onEquip = @(__original) function()
+	q.onEquip = @(__original) { function onEquip()
 	{
 		// Vanilla always randomizes the ammunition count when a quiver is equipped to something, not player controlled
 		// While displaying tooltips we equip the currently viewed item to the Dummy player, triggering such a randomization allowing the player to generate free ammo
@@ -14,5 +14,5 @@
 		{
 			__original();
 		}
-	}
+	}}.onEquip;
 });

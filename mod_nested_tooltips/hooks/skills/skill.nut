@@ -5,12 +5,12 @@
 	// e.g. shoot_bolt in vanilla.
 	q.m.MSU_NestedTooltipItemScript <- null;
 
-	q.getNestedTooltip <- function()
+	q.getNestedTooltip <- { function getNestedTooltip()
 	{
 		return this.getTooltip();
-	}
+	}}.getNestedTooltip;
 
-	q.__MSU_getNestedTooltipSafe <- function()
+	q.__MSU_getNestedTooltipSafe <- { function __MSU_getNestedTooltipSafe()
 	{
 		local fakeItem;
 		if (::MSU.isNull(this.getItem()) && this.m.MSU_NestedTooltipItemScript != null)
@@ -67,5 +67,5 @@
 			::NestedTooltips.Mod.Debug.printWarning(format("Could not fetch nested tooltip for skill %s, so returning base skill tooltip. Error: %s", this.getID(), error));
 			return this.isActive() ? this.skill.getDefaultUtilityTooltip() : this.skill.getTooltip();
 		}
-	}
+	}}.__MSU_getNestedTooltipSafe;
 });

@@ -1,4 +1,4 @@
-::MSU.String.regexReplace <- function( _string, _findRegex, _replaceFunction )
+::MSU.String.regexReplace <- { function regexReplace( _string, _findRegex, _replaceFunction )
 {
 	if (typeof _findRegex == "string")
 		_findRegex = regexp(_findRegex);
@@ -15,4 +15,4 @@
 		lastPos = match[0].end;
 	}
 	return out + _string.slice(lastPos);
-}
+}}.regexReplace;

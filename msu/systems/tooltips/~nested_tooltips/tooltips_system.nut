@@ -2,7 +2,7 @@
 local ImageKeywordMap = {};
 ::MSU.Class.TooltipsSystem.ParsedObjects <- {};
 
-::MSU.Class.TooltipsSystem.setTooltipImageKeywords <- function(_modID, _tooltipTable)
+::MSU.Class.TooltipsSystem.setTooltipImageKeywords <- { function setTooltipImageKeywords(_modID, _tooltipTable)
 {
 	local identifier, path;
 	foreach (imagePath, id in _tooltipTable)
@@ -16,14 +16,14 @@ local ImageKeywordMap = {};
 		identifier = {mod = _modID, id = id};
 		ImageKeywordMap[imagePath] <- identifier;
 	}
-}
+}}.setTooltipImageKeywords;
 
-::MSU.Class.TooltipsSystem.passTooltipIdentifiers <- function()
+::MSU.Class.TooltipsSystem.passTooltipIdentifiers <- { function passTooltipIdentifiers()
 {
 	::NestedTooltips.UI.JSConnection.passTooltipIdentifiers(ImageKeywordMap);
-}
+}}.passTooltipIdentifiers;
 
-::MSU.Class.TooltipsSystem.hasKey <- function( _modID, _key )
+::MSU.Class.TooltipsSystem.hasKey <- { function hasKey( _modID, _key )
 {
 	local fullKey = split(split(_key, "+")[0], ".");
 	local currentTable = this.Mods[_modID];
@@ -38,10 +38,10 @@ local ImageKeywordMap = {};
 	}
 
 	return true;
-}
+}}.hasKey;
 
 // overwrite existing function
-::MSU.Class.TooltipsSystem.getTooltip <- function( _modID, _identifier )
+::MSU.Class.TooltipsSystem.getTooltip <- { function getTooltip( _modID, _identifier )
 {
 	local arr = split(_identifier, "+");
 	local fullKey = split(arr[0], ".");
@@ -70,9 +70,9 @@ local ImageKeywordMap = {};
 		Tooltip = currentTable,
 		Data = extraData
 	};
-}
+}}.getTooltip;
 
-::MSU.Class.TooltipsSystem.parseExtraDataForNestedTooltip <- function( _extraData )
+::MSU.Class.TooltipsSystem.parseExtraDataForNestedTooltip <- { function parseExtraDataForNestedTooltip( _extraData )
 {
 	if (_extraData == null)
 		return { filename = null };
@@ -94,4 +94,4 @@ local ImageKeywordMap = {};
 	}
 
 	return ret;
-}
+}}.parseExtraDataForNestedTooltip;

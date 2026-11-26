@@ -9,7 +9,7 @@ local function byteToUnsigned( _b )
 	return _b < 0 ? _b + 256: _b;
 }
 
-::MSU.Class.TooltipsModAddon.encodeString <- function ( _str )
+::MSU.Class.TooltipsModAddon.encodeString <- { function encodeString( _str )
 {
 	local ret = "";
 	for (local i = 0; i < _str.len(); i++)
@@ -17,9 +17,9 @@ local function byteToUnsigned( _b )
 		ret += format("%03d", byteToUnsigned(_str[i]));
 	}
 	return ret;
-}
+}}.encodeString;
 
-::MSU.Class.TooltipsModAddon.decodeString <- function( _str )
+::MSU.Class.TooltipsModAddon.decodeString <- { function decodeString( _str )
 {
 	local ret = "";
 	for (local i = 0; i < _str.len(); i += 3)
@@ -27,16 +27,16 @@ local function byteToUnsigned( _b )
 		ret += format("%c", _str.slice(i, i + 3).tointeger());
 	}
 	return ret;
-}
+}}.decodeString;
 
-::MSU.Class.TooltipsModAddon.parseObject <- function ( _obj )
+::MSU.Class.TooltipsModAddon.parseObject <- { function parseObject( _obj )
 {
 	local key = _obj + "";
 	::MSU.System.Tooltips.ParsedObjects[key] <- _obj.weakref();
 	return key;
-}
+}}.parseObject;
 
-::MSU.Class.TooltipsModAddon.parseTooltip <- function( _tooltip )
+::MSU.Class.TooltipsModAddon.parseTooltip <- { function parseTooltip( _tooltip )
 {
 	local ret = "<";
 	foreach (entry in _tooltip)
@@ -63,10 +63,10 @@ local function byteToUnsigned( _b )
 	}
 	ret = ret.slice(0, -1) + ">";
 	return ret;
-}
+}}.parseTooltip;
 
 // the __regexp should be a static member of the TooltipsModAddon class when merging into MSU
-::MSU.Class.TooltipsModAddon.parseString <- function( _string, _prefix = "" )
+::MSU.Class.TooltipsModAddon.parseString <- { function parseString( _string, _prefix = "" )
 {
 	local myModID = this.getMod().getID();
 	local match;
@@ -116,10 +116,10 @@ local function byteToUnsigned( _b )
 	}
 
 	return ret + _string.slice(lastPos);
-}
+}}.parseString;
 
 local __removeRegexp = regexp("\\[\\d+=\\d+\\](.+)\\[/\\d+\\]");
-::MSU.Class.TooltipsModAddon.removeAllFromString <- function( _string )
+::MSU.Class.TooltipsModAddon.removeAllFromString <- { function removeAllFromString( _string )
 {
 	_string = this.parseString(_string);
 	local match;
@@ -131,12 +131,12 @@ local __removeRegexp = regexp("\\[\\d+=\\d+\\](.+)\\[/\\d+\\]");
 		lastPos = match[0].end;
 	}
 	return ret + _string.slice(lastPos);
-}
+}}.removeAllFromString;
 
-::MSU.Class.TooltipsModAddon.setTooltipImageKeywords <- function( _table )
+::MSU.Class.TooltipsModAddon.setTooltipImageKeywords <- { function setTooltipImageKeywords( _table )
 {
 	return ::MSU.System.Tooltips.setTooltipImageKeywords(this.Mod.getID(), _table);
-}
+}}.setTooltipImageKeywords;
 
 // This allows mods to add custom dynamic handling for their own tooltip IDs.
 // This must be a function that returns a string and
@@ -147,7 +147,7 @@ local __removeRegexp = regexp("\\[\\d+=\\d+\\](.+)\\[/\\d+\\]");
 // so that each one is only compiled once.
 local __fieldFunctionCache = {};
 
-::MSU.Class.TooltipsModAddon.__generateNestedTextFromObj <- function( _field, _key, _extraData )
+::MSU.Class.TooltipsModAddon.__generateNestedTextFromObj <- { function __generateNestedTextFromObj( _field, _key, _extraData )
 {
 	// MSU.__canCreateDummyPlayer is flipped by us during the first world init
 	// so we can use it here to check whether that has been reached.
@@ -212,4 +212,4 @@ local __fieldFunctionCache = {};
 	}
 
 	return ret;
-}
+}}.__generateNestedTextFromObj;

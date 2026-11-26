@@ -1,11 +1,11 @@
 ::NestedTooltips.MH.hook("scripts/ui/screens/tooltip/tooltip_events", function(q) {
-	q.general_queryEntityNestedTooltipData <- function( _data )
+	q.general_queryEntityNestedTooltipData <- { function general_queryEntityNestedTooltipData( _data )
 	{
 		local entity = ::Tactical.getEntityByID(_data.entityId);
 		return entity == null ? null : entity.getTooltip();
-	}
+	}}.general_queryEntityNestedTooltipData;
 
-	q.general_querySkillNestedTooltipData <- function( _data )
+	q.general_querySkillNestedTooltipData <- { function general_querySkillNestedTooltipData( _data )
 	{
 		local entityId = "entityId" in _data ? _data.entityId : null;
 		local itemId = "itemId" in _data ? _data.itemId : null;
@@ -97,9 +97,9 @@
 		}
 
 		return ret;
-	}
+	}}.general_querySkillNestedTooltipData;
 
-	q.general_queryItemNestedTooltipData <- function( _data )
+	q.general_queryItemNestedTooltipData <- { function general_queryItemNestedTooltipData( _data )
 	{
 		local item;
 
@@ -116,9 +116,9 @@
 		}
 
 		return item.getNestedTooltip();
-	}
+	}}.general_queryItemNestedTooltipData;
 
-	q.getItemByItemOwner <- function( _entityId, _itemId, _itemOwner )
+	q.getItemByItemOwner <- { function getItemByItemOwner( _entityId, _itemId, _itemOwner )
 	{
 		local item;
 		local entity = _entityId != null ? ::Tactical.getEntityByID(_entityId) : null;
@@ -195,7 +195,7 @@
 		}
 
 		return item;
-	}
+	}}.getItemByItemOwner;
 
 	q.onQueryMSUTooltipData = @() { function onQueryMSUTooltipData( _data )
 	{

@@ -1,6 +1,6 @@
 ::MSU.DummyPlayer <- null;
 ::MSU.__canCreateDummyPlayer <- false;
-::MSU.getDummyPlayer <- function()
+::MSU.getDummyPlayer <- { function getDummyPlayer()
 {
 	// Only create it while a world exists, i.e. not in the main menu after leaving a campaign
 	if (this.DummyPlayer == null && this.__canCreateDummyPlayer && "State" in ::World && ::World.State != null)
@@ -9,9 +9,9 @@
 	}
 
 	return this.DummyPlayer;
-}
+}}.getDummyPlayer;
 
-::MSU.__createDummyPlayer <- function()
+::MSU.__createDummyPlayer <- { function __createDummyPlayer()
 {
 	local roster = ::World.createRoster(::NestedTooltips.DummyPlayerRosterID);
 	::MSU.DummyPlayer = roster.create("scripts/entity/tactical/player");
@@ -24,36 +24,36 @@
 
 	::MSU.DummyPlayer.getSkills().removeByID("special.double_grip");
 
-	::MSU.DummyPlayer.getTile = function()
+	::MSU.DummyPlayer.getTile = { function getTile()
 	{
 		return ::MSU.Class.DummyPlayerTile();
-	}
+	}}.getTile;
 
 	// Vanilla does not expect a null entity in the general_queryUIPerkTooltipData function.
 	// So, we pass the dummy player's ID but overwrite the dummy player's hasPerk function
 	// to return true so that the tooltip_events function does not add perk tier requirements to it.
-	::MSU.DummyPlayer.hasPerk = function( _perkID )
+	::MSU.DummyPlayer.hasPerk = { function hasPerk( _perkID )
 	{
 		return true;
-	}
+	}}.hasPerk;
 
 	// Overwrite the hasSprite function to always return false so that no sprite manipulation happens
 	// on the dummy player. It has been observed that equipping/unequipping items on the dummy player
 	// can cause crashes randomly sometimes in various actor functions which access/manipulate sprite brushes.
 	// No idea why.
-	::MSU.DummyPlayer.hasSprite = function( _name )
+	::MSU.DummyPlayer.hasSprite = { function hasSprite( _name )
 	{
 		return false;
-	}
+	}}.hasSprite;
 
 	// Overwrite with empty function for performance as we don't care about dummy player's appearance
-	::MSU.DummyPlayer.onAppearanceChanged = function( _appearance, _setDirty = true )
+	::MSU.DummyPlayer.onAppearanceChanged = { function onAppearanceChanged( _appearance, _setDirty = true )
 	{
-	}
-}
+	}}.onAppearanceChanged;
+}}.__createDummyPlayer;
 
-::MSU.__destroyDummyPlayer <- function()
+::MSU.__destroyDummyPlayer <- { function __destroyDummyPlayer()
 {
 	::MSU.DummyPlayer = null;
 	::World.deleteRoster(::NestedTooltips.DummyPlayerRosterID);
-}
+}}.__destroyDummyPlayer;

@@ -3,7 +3,7 @@
 	// `item_container.unequip` not properly removing bagged items while `item_container.equip` puts them in the bag.
 	// This is necessary for proper equipping/unequipping of bag items for the Dummy Player.
 	// Our removeFromBag hook below calls the MSU skill_container.onUnequip function and updates NPC skills.
-	q.unequip = @(__original) function( _item )
+	q.unequip = @(__original) { function unequip( _item )
 	{
 		if (_item != null && _item != -1 && _item.getSlotType() == ::Const.ItemSlot.Bag)
 		{
@@ -11,11 +11,11 @@
 		}
 
 		return __original(_item);
-	}
+	}}.unequip;
 
 	// Call MSU skill_container.onUnequip function
 	// Temporary fix for MSU while MSU waits to update
-	q.removeFromBag = @(__original) function( _item )
+	q.removeFromBag = @(__original) { function removeFromBag( _item )
 	{
 		if (_item.getCurrentSlotType() == this.Const.ItemSlot.Bag && _item.getSlotType() == ::Const.ItemSlot.Bag && !::MSU.isNull(this.m.Actor) && this.m.Actor.isAlive())
 		{
@@ -38,11 +38,11 @@
 		}
 
 		return ret;
-	}
+	}}.removeFromBag;
 
 	// Call MSU skill_container.onUnequip function
 	// Temporary fix for MSU while MSU waits to update
-	q.removeFromBagSlot = @(__original) function( _slot )
+	q.removeFromBagSlot = @(__original) { function removeFromBagSlot( _slot )
 	{
 		local item = this.m.Items[::Const.ItemSlot.Bag][_slot];
 		if (item != null && item.getSlotType() == ::Const.ItemSlot.Bag && !::MSU.isNull(this.m.Actor) && this.m.Actor.isAlive())
@@ -59,5 +59,5 @@
 		}
 
 		return ret;
-	}
+	}}.removeFromBagSlot;
 });
