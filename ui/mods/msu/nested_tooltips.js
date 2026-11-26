@@ -366,6 +366,8 @@ MSU.NestedTooltip = {
 	cleanupTooltip : function(nestedData) {
 	    this.cleanTooltipContainer(nestedData.tooltipContainer);
 	    this.cleanSourceContainer(nestedData.sourceContainer);
+	    if (nestedData.notifyShowHide)
+	    	Screens.NestedTooltipsJSConnection.notifyTooltipHidden(nestedData.tooltipParams);
 	},
 
 	cleanSourceContainer : function(_sourceContainer)
@@ -458,11 +460,15 @@ MSU.NestedTooltip = {
 			tooltipContainer : tooltipContainer,
 			tooltipParams : _tooltipParams,
 			isLocked : false,
+			notifyShowHide : this.hasShowHideCallbacks(_backendData),
 		};
 		_sourceContainer.data("msu-nested", msuNestedData);
 		tooltipContainer.data("msu-nested", msuNestedData);
 
 		this.TooltipStack.push(msuNestedData);
+		// cleanupTooltip sends the matching notifyTooltipHidden
+		if (msuNestedData.notifyShowHide)
+			Screens.NestedTooltipsJSConnection.notifyTooltipShown(_tooltipParams);
 
 		this.startTooltipLocking(tooltipContainer, _sourceContainer);
 
@@ -470,6 +476,16 @@ MSU.NestedTooltip = {
 		this.TooltipStack.setPassThroughData(_tooltipParams, true);
 		$('body').append(tooltipContainer);
 		this.positionTooltip(tooltipContainer, _backendData, _sourceContainer);
+	},
+	// The Squirrel tooltip has OnShowCallback/OnHideCallback (marker added by onQueryMSUTooltipData)
+	hasShowHideCallbacks : function (_backendData)
+	{
+		for (var i = 0; i < _backendData.length; ++i)
+		{
+			if (_backendData[i] !== null && typeof _backendData[i] === "object" && _backendData[i].contentType === "msu-nested-notify-show-hide")
+				return true;
+		}
+		return false;
 	},
 	getTooltipFromData : function (_backendData, _contentType)
 	{

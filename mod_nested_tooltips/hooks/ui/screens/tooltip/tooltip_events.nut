@@ -197,10 +197,18 @@
 		return item;
 	}
 
-	q.onQueryMSUTooltipData = @() function( _data )
+	q.onQueryMSUTooltipData = @() { function onQueryMSUTooltipData( _data )
 	{
 		local ret = ::MSU.System.Tooltips.getTooltip(_data.modId, _data.elementId);
 		_data.ExtraData <- ret.Data;
-		return ret.Tooltip.getUIData(_data);
-	}
+		local uiData = ret.Tooltip.getUIData(_data);
+		// Tells JS to call onTooltipShown/onTooltipHidden of NestedTooltipsJSConnection for this tooltip.
+		// Vanilla's tooltip builder skips entries with a contentType silently (without one it logs an error).
+		// At the end, so that the first entry, which JS reads the tooltip's contentType from, stays first.
+		if (ret.Tooltip.hasShowHideCallbacks() && typeof uiData == "array" && uiData.len() != 0)
+		{
+			uiData.push({ contentType = "msu-nested-notify-show-hide" });
+		}
+		return uiData;
+	}}.onQueryMSUTooltipData;
 });

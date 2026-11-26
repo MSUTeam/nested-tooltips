@@ -7,6 +7,7 @@ Last review: 2026-11-05, `development` at a732552 (v0.5.4). Fixes are on branch 
 ## Layout
 - `msu/` extends MSU classes in place (to be merged into MSU later); paths mirror MSU's:
   - `msu/systems/tooltips/~nested_tooltips/`: TooltipsSystem and TooltipsModAddon additions (`parseString`, ...).
+  - `msu/systems/tooltips/abstract_tooltip~nested_tooltips.nut`: `OnShowCallback`/`OnHideCallback` on `::MSU.Class.Tooltip`. Squirrel copies base members into a subclass at its declaration, so this must load between MSU's `abstract_tooltip` and `tooltips/basic_tooltip`/`custom_tooltip`; MSU's `msu/systems/tooltips/load.nut` includes the folder via `::IO.enumerateFiles` in name order, and the filename sorts there. `msu_tooltips.nut` logs an error if that order breaks.
   - `msu/msu_mod/~nested_tooltips/`: tooltip types, settings, keybind, `::MSU.NestedTooltips`.
   - `msu/utils/~nested_tooltips/`: the dummy player and `regexReplace`.
 - `mod_nested_tooltips/hooks/`: vanilla hooks, included via `::IO.enumerateFiles` in `scripts/!mods_preload/mod_nested_tooltips.nut`.
@@ -21,6 +22,7 @@ Last review: 2026-11-05, `development` at a732552 (v0.5.4). Fixes are on branch 
 - `Img/` at the start of the link text makes an image link: `[Img/gfx/ui/icons/x.png|Perk+perk_x]`.
 - `$ $` in the link text inserts the object's `Name`, `$Field.func()$` a field with calls. Only `Perk`, `Skill`, `Item` (or a mod's `generateNestedTextFromObjCallback`); fields other than `Perk` throw before the first world init.
 - Tags and identifiers are encoded as 3-digit byte numbers (safe from `toupper()` etc.); JS decodes them as UTF-8 in `parseEncodedText`. Link text stays plain.
+- Any MSU tooltip can call `setOnShowCallback(fn(_data))`/`setOnHideCallback(fn(_data))` (chainable). `_data` are the tooltip's query params plus `ExtraData`. `onQueryMSUTooltipData` then appends `{ contentType = "msu-nested-notify-show-hide" }` (vanilla's builder skips entries with a `contentType` silently); JS `createTooltip` sees it and calls `NestedTooltipsJSConnection.onTooltipShown`, `cleanupTooltip` calls `onTooltipHidden`. So the callbacks follow the tooltip's life in the stack (after `showDelay`, through grace and while locked and hovered).
 - `removeAllFromString` strips links to their text; `getArticle`/`getArticleCapitalized` use it.
 - `parseObject(obj)` keys are `obj + ""` (`(table : 0x...)`), stored as weakrefs in `ParsedObjects`.
 - The overwritten `getTooltip(modID, id)` returns `{ Tooltip, Data }`, not MSU's tooltip object; mods call `getTooltip(...).Tooltip`. Restoring MSU's return value (with a `getTooltipAndData` for the table, `d656535`) was reverted for 0.5.5 to stay compatible with the current Reforged release. It comes back in a later breaking release together with Reforged's `fix-nested-tooltips-get-tooltip` branch.
