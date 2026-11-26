@@ -1,6 +1,41 @@
+local entityTooltip = ::MSU.Class.CustomTooltip(function( _data ) {
+	_data = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData);
+	_data.entityId <- _data.filename.tointeger();
+	local ret = ::TooltipEvents.general_queryEntityNestedTooltipData(_data);
+	if (ret != null)
+		ret.insert(0, { contentType = "entity" });
+	return ret;
+});
+
 // msu/systems/tooltips/abstract_tooltip~nested_tooltips.nut must load between MSU's abstract tooltip and its subclasses
-if (!("setOnShowCallback" in ::MSU.Class.BasicTooltip) || !("setOnShowCallback" in ::MSU.Class.CustomTooltip))
+if ("setOnShowCallback" in ::MSU.Class.BasicTooltip && "setOnShowCallback" in ::MSU.Class.CustomTooltip)
+{
+	// Point out the entity in tactical while its tooltip is open (see the tactical_state hook).
+	// The entity ID, or null for showArrow:false in the extra data or outside tactical.
+	local function getArrowEntityID( _data )
+	{
+		if (!("State" in ::Tactical) || ::Tactical.State == null)
+			return null;
+		local extraData = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData);
+		if ("showArrow" in extraData && extraData.showArrow == "false")
+			return null;
+		return extraData.filename.tointeger();
+	}
+	entityTooltip.setOnShowCallback(function( _data ) {
+		local id = getArrowEntityID(_data);
+		if (id != null)
+			::Tactical.State.nestedTooltips_pushArrowEntity(id);
+	});
+	entityTooltip.setOnHideCallback(function( _data ) {
+		local id = getArrowEntityID(_data);
+		if (id != null)
+			::Tactical.State.nestedTooltips_popArrowEntity(id);
+	});
+}
+else
+{
 	::logError("Nested Tooltips Framework: MSU's tooltip load order changed, so tooltip OnShowCallback/OnHideCallback are unavailable.");
+}
 
 ::MSU.Mod.Tooltips.setTooltips({
 	CharacterStats = ::MSU.Class.CustomTooltip(@(_data) ::TooltipEvents.general_queryUIElementTooltipData(null, "character-stats." + _data.ExtraData, null)),
@@ -56,14 +91,7 @@ if (!("setOnShowCallback" in ::MSU.Class.BasicTooltip) || !("setOnShowCallback" 
 			ret.insert(0, { contentType = "ui-item" });
 		return ret;
 	}),
-	Entity = ::MSU.Class.CustomTooltip(function( _data ) {
-		_data = ::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData);
-		_data.entityId <- _data.filename.tointeger();
-		local ret = ::TooltipEvents.general_queryEntityNestedTooltipData(_data);
-		if (ret != null)
-			ret.insert(0, { contentType = "entity" });
-		return ret;
-	}),
+	Entity = entityTooltip,
 	WorldEntity = ::MSU.Class.CustomTooltip(function( _data ) {
 		// The actual ExtraData is the entity id. It's just called filename because of the parse function
 		local entity = ::World.getEntityByID(::MSU.System.Tooltips.parseExtraDataForNestedTooltip(_data.ExtraData).filename.tointeger());
