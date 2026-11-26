@@ -1,8 +1,6 @@
 local __regexp = regexp("\\[([^\\[\\]]+)\\|([^\\[\\]]+)\\]"); // \[(.+?)\|([\w\.]+)\] \[([^|]+)\|([\w\.]+)\]
 
-// Squirrel regex cannot match empty strings, so we require a blank 1 length string
-// instead of empty string as the default alias for "$Name$"
-local __dynamicFieldRegexp = regexp("\\$([^\\$]+)\\$");
+// "$ $" (a single blank) is the alias for "$Name$" in link texts; "$$" is not a field
 
 local function byteToUnsigned( _b )
 {
@@ -86,14 +84,35 @@ local function byteToUnsigned( _b )
 			local key = split(fullID, "+")[0];
 			local extraData = ::MSU.System.Tooltips.getTooltip(modID, fullID).Data;
 
-			local fieldLastPos = 0;
-			local fieldMatch;
-			while (fieldMatch = __dynamicFieldRegexp.capture(text, fieldLastPos))
+			// Scan for $field$ with find() instead of a regexp: Squirrel's regexp can match a
+			// negated class like [^$] beyond the end of the string, so a lone "$" (e.g. in a
+			// renamed brother's name) returned a bogus match and slice() threw.
+			local fieldStart = text.find("$");
+			while (fieldStart != null)
 			{
-				local field = this.__generateNestedTextFromObj(text.slice(fieldMatch[1].begin, fieldMatch[1].end), key, extraData) + "";
-				text = text.slice(0, fieldMatch[0].begin) + field + text.slice(fieldMatch[0].end);
+				local fieldEnd = text.find("$", fieldStart + 1);
+				if (fieldEnd == null)
+					break;
+
+				// "$$" has no field; its second "$" may start the next one
+				if (fieldEnd == fieldStart + 1)
+				{
+					fieldStart = fieldEnd;
+					continue;
+				}
+
+				local value = this.__generateNestedTextFromObj(text.slice(fieldStart + 1, fieldEnd), key, extraData);
+				if (value == null)
+				{
+					// Not a field of this tooltip (e.g. "$" in a player-given name): keep the text
+					fieldStart = text.find("$", fieldEnd + 1);
+					continue;
+				}
+
+				value = value + "";
+				text = text.slice(0, fieldStart) + value + text.slice(fieldEnd + 1);
 				// Continue after the inserted value, as the text has changed length
-				fieldLastPos = fieldMatch[0].begin + field.len();
+				fieldStart = text.find("$", fieldStart + value.len());
 			}
 		}
 
